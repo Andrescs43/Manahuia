@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 
 void main() {
   runApp(const UIMapaZonasOscuras());
@@ -68,21 +69,68 @@ class MapaZonaTab extends StatefulWidget {
 
 class _MapaZonaTabState extends State<MapaZonaTab> {
   late GoogleMapController mapController;
+  final locationController=Location();
 
+  LatLng? currentPosition;
   final LatLng _center = const LatLng(22.73897, -102.66891); // Coordenadas de ejemplo (Zacatecas)
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
+  Future<void> fetchLocationUpdates() async{
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+
+    serviceEnabled = await locationController.serviceEnabled();
+    if(serviceEnabled){
+      serviceEnabled = await locationController.requestService();
+    }
+    else{
+      return;
+    }
+
+    permissionGranted= await locationController.hasPermission();
+    if(permissionGranted==PermissionStatus.denied){
+      permissionGranted= await locationController.requestPermission();
+      if(permissionGranted!=PermissionStatus.granted){
+        return;
+      }
+    }
+
+    locationController.onLocationChanged.listen((currentLocation){
+      if(currentLocation.latitude!=null && currentLocation.longitude!=null){
+        setState(() {
+          currentPosition=LatLng(currentLocation.latitude!, currentLocation.longitude!,);
+        });
+        print(currentPosition);
+      }
+    });
+  }
+
   @override
-  Widget build(BuildContext context) {
-    return GoogleMap(
+  void initState(){
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async => await fetchLocationUpdates());
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: currentPosition==null
+    ?const Center(child: CircularProgressIndicator())
+    :GoogleMap(
       onMapCreated: _onMapCreated,
       initialCameraPosition: CameraPosition(
         target: _center,
         zoom: 11.0,
       ),
+      markers: {
+        Marker(
+          markerId: const MarkerId('currentPosition'),
+          icon: BitmapDescriptor.defaultMarker,
+          position: currentPosition!
+        )
+      },
+    ),
   );
-  }
 }
