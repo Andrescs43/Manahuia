@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:manahuia/views/ui_reporte.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
@@ -17,7 +18,7 @@ class _UIMapaZonasState extends State<UIMapaZonasOscuras> {
 
   // Lista de las diferentes vistas que cambiarán en función de la pestaña seleccionada
   final List<Widget> _pages = [
-    const Icon(Icons.assignment, size: 150), // Página 1
+    const ReportForm(),                      // Página 1 con el formulario
     const MapaZonaTab(),                     // Página 2 con el mapa
     const Icon(Icons.contacts, size: 150),   // Página 3
   ];

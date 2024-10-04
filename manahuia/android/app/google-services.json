@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "407406315154",
+    "firebase_url": "https://reportdb-manahuia-default-rtdb.firebaseio.com",
+    "project_id": "reportdb-manahuia",
+    "storage_bucket": "reportdb-manahuia.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:407406315154:android:1c5178a8cb584a4fba484b",
+        "android_client_info": {
+          "package_name": "com.example.manahuia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdIgGdLuJV4sTzy80BMo8d3MI7Hc21ge4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
