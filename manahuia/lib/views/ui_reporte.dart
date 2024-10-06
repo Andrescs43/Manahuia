@@ -19,6 +19,7 @@ class _ReportFormState extends State<ReportForm> {
   String _address = 'Obteniendo dirección...'; // Se llenará automáticamente
   String? selectedValue;
   bool _isDropdownError = false;
+  bool _isLocationAvailable = false; // Para verificar si la ubicación está disponible
 
   final List<String> items = ['Alumbrado Dañado', 'Sin Alumbrado'];
 
@@ -41,6 +42,9 @@ class _ReportFormState extends State<ReportForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('El servicio de ubicación está deshabilitado')),
       );
+      setState(() {
+        _isLocationAvailable = false; // Desactivar botón si la ubicación no está disponible
+      });
       return;
     }
 
@@ -52,6 +56,9 @@ class _ReportFormState extends State<ReportForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Permiso de ubicación denegado')),
         );
+        setState(() {
+          _isLocationAvailable = false; // Desactivar botón si los permisos son denegados
+        });
         return;
       }
     }
@@ -60,6 +67,9 @@ class _ReportFormState extends State<ReportForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Los permisos de ubicación están permanentemente denegados')),
       );
+       setState(() {
+        _isLocationAvailable = false; // Desactivar botón si los permisos están denegados permanentemente
+      });
       return;
     }
 
@@ -67,6 +77,7 @@ class _ReportFormState extends State<ReportForm> {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _currentPosition = position;
+      _isLocationAvailable = true; // Activar botón si la ubicación está disponible
     });
 
     // Convertir latitud y longitud en dirección
@@ -131,14 +142,18 @@ class _ReportFormState extends State<ReportForm> {
                   border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(12)),
                   ),
-                  labelText: 'Dirección',
-                  hintText: _address,
+                  labelText: _address,
                 ),
               ),
 
               // Dropdown para el tipo de problema
               const SizedBox(height: 16),
               DropdownButtonHideUnderline(
+                child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey), // Color del borde
+                  borderRadius: BorderRadius.circular(12), // Radio del borde
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -169,6 +184,7 @@ class _ReportFormState extends State<ReportForm> {
                       ),
                   ],
                 ),
+               ),
               ),
 
               // Campo para la descripción
@@ -194,16 +210,17 @@ class _ReportFormState extends State<ReportForm> {
               ),
 
               // Botón para enviar el reporte
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDE8E8E),
+                    foregroundColor: Colors.black, // Color del texto
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: _isLocationAvailable ? () {
                     setState(() {
                       if (selectedValue == null) {
                         _isDropdownError = true;
@@ -232,7 +249,7 @@ class _ReportFormState extends State<ReportForm> {
                         );
                       });
                     }
-                  },
+                  } : null, // Desactivar el botón si _isLocationAvailable es false
                   child: const Text('Enviar Reporte'),
                 ),
               ),
