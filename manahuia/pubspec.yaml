@@ -31,6 +31,10 @@ dependencies:
   flutter:
     sdk: flutter
   google_maps_flutter: ^2.9.0
+  location: ^5.0.3
+  firebase_core: ^2.15.1 # La versión más reciente de firebase_core
+  cloud_firestore: ^4.11.1 # La versión más reciente de cloud_firestore
+  flutter_launcher_icons: "^0.13.1"
   dropdown_button2: ^2.3.9
 
 
@@ -58,7 +62,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  assets:
+    - assets/images/zona.png
+    - assets/images/uazon.png
+    - assets/images/Logo.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -94,3 +101,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_launcher_icons:
+  android: true  # Habilita para Android
+  ios: true      # Habilita para iOS
+  image_path: "assets/images/Logo.png" # La ruta de tu imagen del ícono
