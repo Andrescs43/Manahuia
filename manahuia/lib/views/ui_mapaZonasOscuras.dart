@@ -71,7 +71,7 @@ class MapaZonaTab extends StatefulWidget {
 class _MapaZonaTabState extends State<MapaZonaTab> {
   late GoogleMapController mapController;
   final locationController = Location();
-
+  BitmapDescriptor? uazonIcon;
   LatLng? currentPosition;
   final LatLng _center = const LatLng(22.73897, -102.66891); // Coordenadas de ejemplo (Zacatecas)
   final Set<Marker> _markers = {}; // Conjunto para los marcadores
@@ -109,22 +109,36 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
     });
   }
 
+  Future<BitmapDescriptor> getCustomIcon() async {
+    return await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)), // Tamaño del ícono
+      'assets/images/zona.png', // Ruta de la imagen en assets
+    );
+  }
+
+  Future<void> loadCustomMarkerIcon() async {
+    uazonIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/images/uazon.png',
+    );
+  }
+
   Future<void> fetchMarkersFromFirestore() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot querySnapshot = await firestore.collection('Reporte').get(); // Cambia 'tu_coleccion' por el nombre de tu colección
+    BitmapDescriptor customIcon = await getCustomIcon();
+    QuerySnapshot querySnapshot = await firestore.collection('Reporte').get();
 
     for (var doc in querySnapshot.docs) {
       double lat = double.parse(doc['Latitud']); // Convierte la cadena a double
       double lon = double.parse(doc['Longitud']); // Convierte la cadena a double
 
-      setState(() {
-        _markers.add(
-          Marker(
-            markerId: MarkerId(doc.id),
-            position: LatLng(lat, lon),
-          ),
-        );
-      });
+      _markers.add(
+        Marker(
+          markerId: MarkerId(doc.id),
+          position: LatLng(lat, lon),
+          icon: customIcon,
+        ),
+      );
     }
   }
 
@@ -132,28 +146,32 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await loadCustomMarkerIcon(); // Cargar el icono aquí
       await fetchLocationUpdates();
       await fetchMarkersFromFirestore(); // Cargar marcadores de Firestore
     });
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: currentPosition == null
-      ? const Center(child: CircularProgressIndicator())
-      : GoogleMap(
-          onMapCreated: _onMapCreated,
-          initialCameraPosition: CameraPosition(
-            target: currentPosition!,
-            zoom: 11.0,
-          ),
-          markers: _markers.union({
-            Marker(
-              markerId: const MarkerId('currentPosition'),
-              icon: BitmapDescriptor.defaultMarker,
-              position: currentPosition!,
-            ),
-          }),
+  Widget build(BuildContext context) {
+    // Mostrar un loader mientras se carga el icono
+    if (uazonIcon == null || currentPosition == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: currentPosition!,
+        zoom: 11.0,
+      ),
+      markers: _markers.union({
+        Marker(
+          markerId: const MarkerId('currentPosition'),
+          icon: uazonIcon!, // Ya que el icono se ha cargado, lo usamos
+          position: currentPosition!,
         ),
-  );
+      }),
+    );
+  }
 }
