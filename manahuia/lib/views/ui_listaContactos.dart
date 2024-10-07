@@ -18,7 +18,6 @@ class UIListaContactosEmergencia extends StatefulWidget {
 
 //Clase externa que permite obtener la lista de contactos cuando sea necesaria.
 class ContactosService {
-  List<Contact> contactos = [];
 
   //Metodo que permite agregar contactos a la lista interna
   void agregarContacto(Contact contacto) {
@@ -222,11 +221,12 @@ class ListaCETab extends StatefulWidget {
   _ListaCETabState createState() => _ListaCETabState();
 }
 
+ContactosService contactosService = ContactosService();
+List<Contact> contactos = [];
 //muestra la pestana en la vista de navegacion
 class _ListaCETabState extends State<ListaCETab> {
-  final ContactosService contactosService = ContactosService();
   final _UIListaContactosEmergencia uiListaCE = _UIListaContactosEmergencia();
-  List<Contact> contactos = [];
+  
   bool isLoading = true; // Bandera para mostrar estado de carga
 
   @override
@@ -272,9 +272,7 @@ Future<void> cargarContactos() async {
   @override
   Widget build(BuildContext context) {
     // Mostrar indicador de carga mientras se obtienen los contactos
-    if (isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
+
 
     // Si no hay contactos, mostrar un mensaje
     if (contactos.isEmpty) {
