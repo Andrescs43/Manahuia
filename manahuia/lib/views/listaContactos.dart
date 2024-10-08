@@ -31,6 +31,18 @@ class ContactosService {
     }
   }
 
+  //Metodo que permite agregar contactos a la lista interna
+  void quitaContacto(Contact contacto) {
+    if (contactos.contains(contacto)){
+      contactos.remove(contacto);
+      String name = contacto.displayName;
+      guardarContactos();
+      print("Eliminado: "+name+" \ntotal de contactos:"+contactos.length.toString());
+    } else {
+      print("El contacto no esta en la lista");
+    }
+  }
+
   // Método para guardar los contactos en SharedPreferences y encodificar a formato JSON.
   Future<void> guardarContactos() async {
     SharedPreferences prefs = await SharedPreferences.getInstance(); //obtener las instancias
@@ -96,6 +108,24 @@ class _UIListaContactosEmergencia extends State<UIListaContactosEmergencia> {
     }
   }
 
+   Future<void> borraContacto(Contact contacto) async {
+  try {
+      contactosService.quitaContacto(contacto); //invoca a la clase de la lista de contactos para agregar a un usuraio nuevo
+    } catch (e){
+      print("No se pudo borrar el contacto ($e)");
+      return null;
+    }
+}
+
+  Future <void> quitaContacto(Contact contacto) async {
+    try {
+      contactosService.quitaContacto(contacto); //invoca a la clase de la lista de contactos para agregar a un usuraio nuevo
+    } catch (e){
+      print("No se pudo borrar el contacto ($e)");
+      return null;
+    }
+  }
+
   List<Contact> obtenerListaContactos() {
     return contactosService.obtenerContactos();
   }
@@ -155,6 +185,8 @@ int numeroContactos()  {
   return n;
 }
 
+//ESTOS DIALOGOS KKS QUE DISQUE NO ESTAN MONTADOS Y LES DA ANSIEDAD (Eso que we)
+
  /** Abre un cuadro de dialogo informando que no se han concedido permisos de contactos.
   */
   Future<void> muestraDialogoPermiso(BuildContext context) {
@@ -211,6 +243,25 @@ int numeroContactos()  {
       },
     );
     }
+
+    void mostrarDialogoConfirmacion(Contact contacto) {
+  // Asegúrate de que el widget está montado o usa ScaffoldMessenger para garantizar la visualización
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('¿Estás seguro de que deseas eliminar este contacto de la lista de emergencia?'),
+      action: SnackBarAction(
+        label: 'Sí',
+        onPressed: () {
+          contactosService.quitaContacto(contacto); // Elimina el contacto de la lista
+          setState(() {
+            contactos = contactosService.obtenerContactos(); // Actualiza la lista de contactos en la UI
+          });
+        },
+      ),
+    ),
+  );
+}
+
 }
 
 //crea el widget de estados
@@ -244,17 +295,6 @@ Future<void> cargarContactos() async {
     });
   }
 
-  // Método para obtener los contactos y actualizar la lista
-  /*
-  void cargarContactos() async {
-    final nuevosContactos = await contactosService.obtenerContactos();
-    setState(() {
-      contactos = uiListaCE.obtenerListaContactos();
-      isLoading = false;
-    });
-  }
-  */
-
   // Método para agregar un contacto nuevo
   void agregarContactoNuevo() async{
     final nuevoContacto = await uiListaCE.obtenContacto(); // Llama al método para agregar un contacto de la clase uiListaCE y espera a que se seleccione
@@ -265,90 +305,118 @@ Future<void> cargarContactos() async {
     }// Refrescar la lista después de agregar un contacto
   }
 
+  // Método para quitar un contacto nuevo
+  Future <void> quitarContacto(Contact contacto) async{
+    await uiListaCE.borraContacto(contacto);
+    //contactosService.cargarContactos();
+    //if (nuevoContacto != null) {
+      // Si se seleccionó un contacto válido, refrescamos la lista
+    cargarContactos();
+    //}// Refrescar la lista después de agregar un contacto
+  }
+
   Future<void> verContacto(Contact contacto) async {
     await FlutterContacts.openExternalView(contacto.id);
   }
+@override
+Widget build(BuildContext context) {
+  // Mostrar indicador de carga mientras se obtienen los contactos
 
-  @override
-  Widget build(BuildContext context) {
-    // Mostrar indicador de carga mientras se obtienen los contactos
+  // Si no hay contactos, mostrar un mensaje
+  if (contactos.isEmpty) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("No hay contactos guardados.\n¿Por qué no empiezas agregando uno?\n(Pulsa el botón '+')"),
+          IconButton(
+            onPressed: agregarContactoNuevo,
+            icon: Icon(Icons.add),
+            iconSize: 50,
+          ),
+        ],
+      ),
+    );
+  }
 
-
-    // Si no hay contactos, mostrar un mensaje
-    if (contactos.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("No hay contactos guardados.\n¿Por qué no empiezas agregando uno?\n(Pulsa el botón '+')"),
-            IconButton(
-              onPressed: agregarContactoNuevo,
-              icon: Icon(Icons.add),
-              iconSize: 50,
-            )
-          ],
-        ),
-      );
-    }
-
-    // Construir la lista de contactos
-    return Stack(
+  // Construir la lista de contactos
+  return Stack(
     children: [
       ListView.builder(
         itemCount: contactos.length,
         itemBuilder: (context, index) {
           final Contact contacto = contactos[index];
-          return Container(
-            alignment: Alignment.center,
-            margin: const EdgeInsets.all(15),
-            height: 130,
-            color: const Color.fromARGB(255, 183, 182, 182),
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          return Stack(
             children: [
-              Text(
-                contacto.displayName+"\n",
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic),
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  // Acción que quieres ejecutar al presionar el botón
-                  verContacto(contacto);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 83, 83, 83), // Color del botón
-                ),
-                child: Row(
-                      mainAxisSize: MainAxisSize.min, // Ajusta el tamaño de la fila al contenido
-                      children: [
-                        Icon(
-                          Icons.phone, // Aquí puedes poner el ícono que prefieras
-                          color: Colors.white, // Color del ícono
-                        ),
-                        const SizedBox(width: 5), // Espacio entre el ícono y el texto
-                        const Text(
-                          "Ver Contacto",
-                          style: TextStyle(color: Colors.white), // Estilo del texto
-                        ),
-                      ],
+              Container(
+                alignment: Alignment.center,
+                margin: const EdgeInsets.all(15),
+                height: 130,
+                color: const Color.fromARGB(255, 183, 182, 182),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      contacto.displayName + "\n",
+                      style: const TextStyle(
+                        fontSize: 20, 
+                        fontWeight: FontWeight.bold, 
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-            )
+                    ElevatedButton(
+                      onPressed: () {
+                        verContacto(contacto);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 83, 83, 83),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min, 
+                        children: [
+                          Icon(
+                            Icons.phone,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 5),
+                          const Text(
+                            "Ver Contacto",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // IconButton en la esquina superior derecha
+              Positioned(
+                top: 5, // Ajusta la posición vertical
+                right: 5, // Ajusta la posición horizontal
+                child: IconButton(
+                  onPressed: () {
+                    quitarContacto(contacto);
+                    print("ola :)");
+                  },
+                  icon: const Icon(Icons.cancel_outlined),
+                  color: const Color.fromARGB(255, 137, 10, 1), // Opción para darle color al ícono
+                ),
+              ),
             ],
-          )
           );
         },
       ),
       // Botón en la esquina superior izquierda
-    Positioned(
-      top: -5, // Ajusta la posición vertical
-      left: -5, // Ajusta la posición horizontal
-      child: IconButton(
-        iconSize: 50,
-        onPressed: agregarContactoNuevo,
-        icon: Icon(Icons.add),
+      Positioned(
+        top: -5, 
+        left: -5,
+        child: IconButton(
+          iconSize: 50,
+          onPressed: agregarContactoNuevo,
+          icon: Icon(Icons.add),
+        ),
       ),
-    ),
-    ]
-    );
-  }
+    ],
+  );
+}
 }
