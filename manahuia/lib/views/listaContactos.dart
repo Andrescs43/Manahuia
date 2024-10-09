@@ -44,11 +44,18 @@ class ContactosService {
   }
 
   // Método para guardar los contactos en SharedPreferences y encodificar a formato JSON.
-  Future<void> guardarContactos() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance(); //obtener las instancias
-    List<String> contactosJson = contactos.map((contacto) => jsonEncode(contacto.toJson())).toList();
-    await prefs.setStringList('contactos', contactosJson);
-  }
+Future<void> guardarContactos() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance(); // obtener las instancias
+  List<String> contactosJson = contactos.map((contacto) {
+    var contactoSinFoto = { //para evitar que se me petatie el codigo al guardar foto, hay que guardar en formato JSON indicando los campos UInt8List? en nulos.
+      ...contacto.toJson(),
+      'photo': null,
+      'thumbnail': null,
+    };
+    return jsonEncode(contactoSinFoto);
+  }).toList();
+  await prefs.setStringList('contactos', contactosJson);
+}
 
   // Método para cargar los contactos guardados
   Future<void> cargarContactos() async {
@@ -318,6 +325,60 @@ Future<void> cargarContactos() async {
   Future<void> verContacto(Contact contacto) async {
     await FlutterContacts.openExternalView(contacto.id);
   }
+/* ESTE METODO NO LO BORRE POR QUE CHANCE Y PUEDE SER USADO EN EL FUTURO
+ void mostrarDialogoConfirmacion(Contact contacto) {
+  // Asegúrate de que el widget está montado o usa ScaffoldMessenger para garantizar la visualización
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('¿Estás seguro de que deseas eliminar este contacto de la lista de emergencia?'),
+      action: SnackBarAction(
+        label: 'Sí',
+        onPressed: () {
+          quitarContacto(contacto);
+          setState(() {
+            contactos = contactosService.obtenerContactos(); // Actualiza la lista de contactos en la UI
+          });
+        },
+      ),
+    ),
+  );
+}
+*/
+
+void mostrarDialogoBorrar(Contact contacto) {
+  if (!mounted) return; // Si el widget no está montado, salir
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('¿Borrar este contacto?'),
+        actions: <Widget>[
+          const Text(
+            "Quitarás este contacto solamente de esta lista de contactos de emergencia, pero se conservará en tus contactos del teléfono."
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Cierra el diálogo sin hacer nada
+            },
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () {
+              quitarContacto(contacto); // Elimina el contacto de la lista
+              setState(() {
+                contactos = contactosService.obtenerContactos(); // Actualiza la lista de contactos en la UI
+              });
+              Navigator.of(context).pop(); // Cierra el diálogo
+            },
+            child: const Text('Sí'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 @override
 Widget build(BuildContext context) {
   // Mostrar indicador de carga mientras se obtienen los contactos
@@ -352,7 +413,15 @@ Widget build(BuildContext context) {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.all(15),
                 height: 130,
-                color: const Color.fromARGB(255, 183, 182, 182),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 183, 182, 182),
+                  borderRadius: BorderRadius.circular(20), // Radio de las esquinas
+                  border: Border.all(
+                    color: const Color.fromARGB(255, 63, 63, 63),  // Color del borde
+                    width: 3,             // Grosor del borde
+                    style: BorderStyle.solid, // Estilo del borde (puede ser solid, dashed, etc.)
+                  ),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -391,11 +460,11 @@ Widget build(BuildContext context) {
               ),
               // IconButton en la esquina superior derecha
               Positioned(
-                top: 5, // Ajusta la posición vertical
-                right: 5, // Ajusta la posición horizontal
+                top: 10, // Ajusta la posición vertical
+                right: 8, // Ajusta la posición horizontal
                 child: IconButton(
                   onPressed: () {
-                    quitarContacto(contacto);
+                    mostrarDialogoBorrar( contacto);
                     print("ola :)");
                   },
                   icon: const Icon(Icons.cancel_outlined),
