@@ -17,6 +17,7 @@ class UIListaContactosEmergencia extends StatefulWidget {
 }
 
 //Clase externa que permite obtener la lista de contactos cuando sea necesaria.
+//Actua como parte del modelo al momento de Leer, Cargar y Guardar los Contactos en archivos locales.
 class ContactosService {
 
   //Metodo que permite agregar contactos a la lista interna
@@ -74,6 +75,9 @@ Future<void> guardarContactos() async {
   }
 }
 
+//Clase del controlador que conecta las solicitudes de la Interfaz de Usuario con el modelo
+//por ahora se llama UIListaContactosEmergencia, pero lo unico de la UI es la navegacion, 
+//haciendo que probablemente haya que cambiar la estructura de la clase.
 class _UIListaContactosEmergencia extends State<UIListaContactosEmergencia> {
   int _currentIndex = 0;
   late ContactosService contactosService = ContactosService();
@@ -92,7 +96,7 @@ class _UIListaContactosEmergencia extends State<UIListaContactosEmergencia> {
       var permissionStatus = await Permission.contacts.status;
       await Permission.contacts.request();
       if (!permissionStatus.isGranted) { //si NO se permite acceder a los contactos
-            muestraDialogoPermiso(context);
+            mostrarPermisos();
         } else { //si se permite acceder a los contactos
             final contacto = await FlutterContacts.openExternalPick();
             if (contacto != null){ //el usuario elije un contacto
@@ -104,7 +108,6 @@ class _UIListaContactosEmergencia extends State<UIListaContactosEmergencia> {
               print("Contactos totales en la lista de UI: "+total);
               return contacto;
             } else { //si el usuario no ingresa un contacto
-              muestraDialogoNoSeleccionado(context);
               return null;
             }
         } 
@@ -196,82 +199,38 @@ int numeroContactos()  {
 
  /** Abre un cuadro de dialogo informando que no se han concedido permisos de contactos.
   */
-  Future<void> muestraDialogoPermiso(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Aviso'),
-          content: const Text(
+  void mostrarPermisos() {
+  if (!mounted) return; // Si el widget no está montado, salir
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Ups, necesitamos permiso...'),
+        actions: <Widget>[
+           const Text(
             'Para poder crear tu lista de contactos\n'
                 'de emergencia son necesarios los\n'
                 'permisos para leer tus contactos.\n'
                 '\nPor favor, ve a Configuracion > Aplicaciones > Manahuia > Permisos > Contactos > Permitir :)\n',
           ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Entendido'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-    }
-
- /** Abre un cuadro de dialogo informando que no se ha seleccionado un contacto.
-  */
-    Future<void> muestraDialogoNoSeleccionado(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Advertencia'),
-          content: const Text(
-            'Ningun contacto fue seleccionado.\n',
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Cierra el diálogo sin hacer nada
+            },
+            child: const Text('Entendido'),
           ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Entendido'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-    }
-
-    void mostrarDialogoConfirmacion(Contact contacto) {
-  // Asegúrate de que el widget está montado o usa ScaffoldMessenger para garantizar la visualización
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('¿Estás seguro de que deseas eliminar este contacto de la lista de emergencia?'),
-      action: SnackBarAction(
-        label: 'Sí',
-        onPressed: () {
-          contactosService.quitaContacto(contacto); // Elimina el contacto de la lista
-          setState(() {
-            contactos = contactosService.obtenerContactos(); // Actualiza la lista de contactos en la UI
-          });
-        },
-      ),
-    ),
+        ],
+      );
+    },
   );
 }
 
-}
+ /** Abre un cuadro de dialogo informando que no se ha seleccionado un contacto.
+  */
 
-//crea el widget de estados
+}
+//Clase de la vista que crea el widget de estados (Solo crea el estado de la pestana de la lista de contactos).
 class ListaCETab extends StatefulWidget {
   const ListaCETab({super.key});
 
@@ -281,7 +240,9 @@ class ListaCETab extends StatefulWidget {
 
 ContactosService contactosService = ContactosService();
 List<Contact> contactos = [];
-//muestra la pestana en la vista de navegacion
+
+//Clase de la vista, el cual muestra la lista de contactos dentro de la aplicacion,
+//muestra la lista de contactos y hace llamadas al servicio de la UI de navegacion, la cual llama a la logica del controlador.
 class _ListaCETabState extends State<ListaCETab> {
   final _UIListaContactosEmergencia uiListaCE = _UIListaContactosEmergencia();
   
@@ -294,6 +255,7 @@ class _ListaCETabState extends State<ListaCETab> {
     cargarContactos();
   }
 
+//permite mostrar la vista de los contactos al llamar al servicio de contactos.
 Future<void> cargarContactos() async {
     await contactosService.cargarContactos();
     setState(() {
@@ -309,17 +271,15 @@ Future<void> cargarContactos() async {
     if (nuevoContacto != null) {
       // Si se seleccionó un contacto válido, refrescamos la lista
       cargarContactos();
-    }// Refrescar la lista después de agregar un contacto
+    } else { // avisar que no hay contacto seleccionado
+      muestraDialogoNoSeleccionado();
+    }
   }
 
   // Método para quitar un contacto nuevo
   Future <void> quitarContacto(Contact contacto) async{
     await uiListaCE.borraContacto(contacto);
-    //contactosService.cargarContactos();
-    //if (nuevoContacto != null) {
-      // Si se seleccionó un contacto válido, refrescamos la lista
     cargarContactos();
-    //}// Refrescar la lista después de agregar un contacto
   }
 
   Future<void> verContacto(Contact contacto) async {
@@ -345,6 +305,7 @@ Future<void> cargarContactos() async {
 }
 */
 
+//Solo muestra un aviso en la parte grafica de confirmacion para borrar.
 void mostrarDialogoBorrar(Contact contacto) {
   if (!mounted) return; // Si el widget no está montado, salir
 
@@ -379,6 +340,14 @@ void mostrarDialogoBorrar(Contact contacto) {
   );
 }
 
+void muestraDialogoNoSeleccionado() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Aviso: Ningún contacto fue seleccionado.'),
+    ),
+  );
+}
+
 @override
 Widget build(BuildContext context) {
   // Mostrar indicador de carga mientras se obtienen los contactos
@@ -389,7 +358,7 @@ Widget build(BuildContext context) {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("No hay contactos guardados.\n¿Por qué no empiezas agregando uno?\n(Pulsa el botón '+')"),
+          Text("No hay contactos guardados.\n¿Por qué no empiezas agregando uno?\n¡Pulsa el botón '+'!\n(Recuerda haber activado el permiso\npara acceder a tus contactos)."),
           IconButton(
             onPressed: agregarContactoNuevo,
             icon: Icon(Icons.add),
@@ -465,7 +434,6 @@ Widget build(BuildContext context) {
                 child: IconButton(
                   onPressed: () {
                     mostrarDialogoBorrar( contacto);
-                    print("ola :)");
                   },
                   icon: const Icon(Icons.cancel_outlined),
                   color: const Color.fromARGB(255, 137, 10, 1), // Opción para darle color al ícono
