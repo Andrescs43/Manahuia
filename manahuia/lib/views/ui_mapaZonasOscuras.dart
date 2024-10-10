@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:manahuia/views/listaContactos.dart';
 import 'package:manahuia/views/ui_reporte.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -22,7 +23,7 @@ class _UIMapaZonasState extends State<UIMapaZonasOscuras> {
   final List<Widget> _pages = [
     const ReportForm(),                      // Página 1 con el formulario
     const MapaZonaTab(),                     // Página 2 con el mapa
-    const Icon(Icons.contacts, size: 150),   // Página 3
+    const ListaCETab(),   // Página 3
   ];
 
   @override
