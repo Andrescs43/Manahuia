@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  permission_handler_windows
   cloud_firestore
   firebase_core
   geolocator_windows
