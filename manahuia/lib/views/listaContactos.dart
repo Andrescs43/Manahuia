@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart'; // Clase para manejar los contactos de flutter
 import 'package:manahuia/views/ui_mapaZonasOscuras.dart'; //Clase de las zonas oscuras.
+import 'package:manahuia/views/ui_reporte.dart'; //Clase del reporte
 import 'package:permission_handler/permission_handler.dart'; //Maneja permisos del dispositivo.
 import 'package:shared_preferences/shared_preferences.dart'; //Guarda las listas de contactos en el dispositivo.
 import 'dart:convert'; //Convierte a JSON
@@ -84,9 +85,9 @@ class _UIListaContactosEmergencia extends State<UIListaContactosEmergencia> {
   List <Contact> contactos = [];
   // Lista de las diferentes vistas que cambiarán en función de la pestaña seleccionada
   final List<Widget> _pages = [
-    const Icon(Icons.assignment, size: 150), // Página 1
-    const MapaZonaTab(),   // Página 2 (actual con el reporte)
-    const ListaCETab(),   // Página 3 del reporte
+    const ReportForm(), // Página 1 del reporte
+    const MapaZonaTab(),   // Página 2 del mapa
+    const ListaCETab(),   // Página 3 actual lista Contactos
   ];
 
 //funcion que obtiene la lista de contactos
