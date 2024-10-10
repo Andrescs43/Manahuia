@@ -8,6 +8,7 @@ class LocationService {
   }
 
   bool isUserNearZone(Position userPosition, List<Map<String, double>> dangerZones) {
+    print("Verificando si el usuario está cerca de una zona peligrosa...");
     for (var zone in dangerZones) {
       double distance = Geolocator.distanceBetween(
         userPosition.latitude,
