@@ -37,11 +37,17 @@ dependencies:
   flutter_native_contact_picker: ^0.0.8
   flutter_contacts: ^1.1.9+2
   shared_preferences: ^2.0.6
-  #contactor_picker: ^0.0.7 Esta puta dependencia no vale verga
+  location: ^5.0.3
+  flutter_launcher_icons: "^0.13.1"
+  dropdown_button2: ^2.3.9
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  geolocator: ^13.0.1
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -52,14 +58,17 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^3.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  assets:
+    - assets/images/zona.png
+    - assets/images/uazon.png
+    - assets/images/Logo.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -95,3 +104,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_launcher_icons:
+  android: true  # Habilita para Android
+  ios: true      # Habilita para iOS
+  image_path: "assets/images/Logo.png" # La ruta de tu imagen del ícono
