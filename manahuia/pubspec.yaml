@@ -68,6 +68,7 @@ flutter:
   assets:
     - assets/images/zona.png
     - assets/images/uazon.png
+    - assets/images/circulo.png
     - assets/images/Logo.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
