@@ -4,6 +4,8 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart'; // Para convertir latitud y longitud a una dirección
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:manahuia/notifications_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ReportForm extends StatefulWidget {
   const ReportForm({super.key});
@@ -28,7 +30,21 @@ class _ReportFormState extends State<ReportForm> {
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation(); // Llamar para obtener la ubicación al iniciar
+    _checkNotificationPermission().then((_) {
+      // Luego llama a obtener la ubicación actual
+      _getCurrentLocation();
+    });
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final status = await Permission.notification.status;
+
+    if (!status.isGranted) {
+      // Muestra un mensaje si el permiso sigue denegado
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permisos de notificación están desactivados.')),
+        );
+    }
   }
 
   // Método para obtener la ubicación actual

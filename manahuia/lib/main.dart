@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:manahuia/location_service.dart';
 import 'package:manahuia/notifications_service.dart';
 import 'package:manahuia/zones_service.dart';
-
 import 'views/ui_mapaZonasOscuras.dart';
 
 void main() async {
