@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:manahuia/controller/ControladorListaCE.dart';
+import 'package:manahuia/controladores/ControladorListaCE.dart';
 
 class ListaCETab extends StatefulWidget {
   const ListaCETab({super.key});
