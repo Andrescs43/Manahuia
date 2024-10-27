@@ -61,3 +61,7 @@ flutter {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+dependencies {
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+}
