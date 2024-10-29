@@ -34,11 +34,11 @@ class ControladorListaCE {
     return contactosService.obtenerContactos();
   }
 
-  void actualizarEstado(String estado, String telefono) async{
+  void actualizarEstado(String estado,) async{
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     String longitud = position.longitude.toString();
     String latitud = position.latitude.toString();
-    contactosService.actualizarEstado(estado, telefono, longitud, latitud);
+    contactosService.actualizarEstado(estado, longitud, latitud);
   }
 
   String obtenerEstado(String telefono){

@@ -1,6 +1,7 @@
 // login_controller.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/contactosModelo.dart';
 
 class LoginController {
@@ -18,6 +19,7 @@ class LoginController {
 
       if (snapshot.docs.isNotEmpty) {
         print("Inicio de sesión exitoso");
+        await guardarTelefono(telefono); // Guardamos el teléfono
         return true;
       } else {
         print("Teléfono o contraseña incorrectos");
@@ -28,6 +30,12 @@ class LoginController {
       return false;
     }
   }
+
+  // Método para guardar el teléfono en SharedPreferences
+Future<void> guardarTelefono(int telefono) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('telefono', telefono.toString());
+}
 
   // Método para registrar un nuevo usuario en Firebase
   Future<void> registrarUsuario(LoginModel usuario) async {

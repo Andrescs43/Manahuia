@@ -75,14 +75,14 @@ class _ListaCETabState extends State<ListaCETab> {
       if (estoyBien) {
         mensajeColor = Colors.green;
         mensajeTexto = "Tus contactos verán que estás bien";
-        contactosController.actualizarEstado("Bien", "666");
+        contactosController.actualizarEstado("Bien");
         botonColorBien = Colors.green;
         botonColorMal = Colors.black;
       } else {
         mensajeColor = Colors.red;
         mensajeTexto =
-            "Notificaremos a tus contactos que te encuentras mal.\nPonte en contacto con ellos lo más rápido posible.";
-            contactosController.actualizarEstado("Mal", "666");
+            "Mostraremos a tus contactos que te encuentras mal.\nPonte en contacto con ellos lo más rápido posible.";
+            contactosController.actualizarEstado("Mal");
         botonColorBien = Colors.black;
         botonColorMal = Colors.red;
       }

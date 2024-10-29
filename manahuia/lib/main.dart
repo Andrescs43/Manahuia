@@ -37,8 +37,9 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+}
 
-class MyApp extends StatelessWidget {
+/*class MyApp extends StatelessWidget {
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -65,5 +66,5 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(primarySwatch: Colors.blue),
         home: const UIMapaZonasOscuras(),
       );
-}
+}*/
 
