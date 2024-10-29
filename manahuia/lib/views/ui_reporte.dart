@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart'; // Para convertir latitud y longitud a una dirección
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:manahuia/notifications_service.dart';
-import 'package:permission_handler/permission_handler.dart';
+import '../controladores/reporte_controlador.dart';
+import '../models/reporte_model.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class ReportForm extends StatefulWidget {
   const ReportForm({super.key});
@@ -16,109 +14,48 @@ class ReportForm extends StatefulWidget {
 
 class _ReportFormState extends State<ReportForm> {
   final _formKey = GlobalKey<FormState>();
-  String _description = '';
-  String _streetName = '';
-  String _address = 'Obteniendo dirección...'; // Se llenará automáticamente
-  String? selectedValue;
+  final ReportModel reportModel = ReportModel(
+    description: '',
+    emisorName: '',
+    address: 'Obteniendo dirección...',
+    isLocationAvailable: false,
+  );
+  late ReportController reportController;
   bool _isDropdownError = false;
-  bool _isLocationAvailable = false; // Para verificar si la ubicación está disponible
 
   final List<String> items = ['Alumbrado Dañado', 'Sin Alumbrado'];
-
-  Position? _currentPosition; // Para almacenar la ubicación actual (latitud y longitud)
+  List<File> selectedImages = []; // Lista de imágenes seleccionadas
 
   @override
   void initState() {
     super.initState();
-    _checkNotificationPermission().then((_) {
-      // Luego llama a obtener la ubicación actual
-      _getCurrentLocation();
-    });
+    reportController = ReportController(reportModel);
+    reportController.getCurrentLocation().then((_) => setState(() {})); // Obtener la ubicación actual
   }
 
-  Future<void> _checkNotificationPermission() async {
-    final status = await Permission.notification.status;
-
-    if (!status.isGranted) {
-      // Muestra un mensaje si el permiso sigue denegado
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permisos de notificación están desactivados.')),
-        );
-    }
-  }
-
-  // Método para obtener la ubicación actual
-  Future<void> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Verificar si el servicio de ubicación está habilitado
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El servicio de ubicación está deshabilitado')),
-      );
-      setState(() {
-        _isLocationAvailable = false; // Desactivar botón si la ubicación no está disponible
-      });
-      return;
-    }
-
-    // Verificar permisos de ubicación
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permiso de ubicación denegado')),
-        );
+  //Metodo para abrir la camara y tomar la evidencia fotografica
+  Future<void> _pickImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: source, preferredCameraDevice: CameraDevice.rear,); //Camara trasera
+      if (image != null) {
         setState(() {
-          _isLocationAvailable = false; // Desactivar botón si los permisos son denegados
+          selectedImages.add(File(image.path));
         });
-        return;
       }
-    }
+  }
 
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Los permisos de ubicación están permanentemente denegados')),
-      );
-       setState(() {
-        _isLocationAvailable = false; // Desactivar botón si los permisos están denegados permanentemente
-      });
-      return;
-    }
-
-    // Obtener la ubicación actual
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  // Método para limpiar el formulario
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    reportModel.problemType = null;
+    reportModel.description = '';
+    selectedImages.clear();
     setState(() {
-      _currentPosition = position;
-      _isLocationAvailable = true; // Activar botón si la ubicación está disponible
+      _isDropdownError = false;
     });
-
-    // Convertir latitud y longitud en dirección
-    await _getAddressFromLatLng(position);
   }
 
-  // Método para convertir latitud y longitud en dirección
-  Future<void> _getAddressFromLatLng(Position position) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-      Placemark place = placemarks[0];
-      setState(() {
-        _address = '${place.street}, ${place.locality}, ${place.country}';
-      });
-    } catch (e) {
-      setState(() {
-        _address = 'No se pudo obtener la dirección';
-      });
-      print(e);
-    }
-  }
-
+  // Método para construir el formulario
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -129,143 +66,114 @@ class _ReportFormState extends State<ReportForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Campo para el nombre del emisor
               const SizedBox(height: 16),
               TextFormField(
                 decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   labelText: 'Nombre del emisor',
                   hintText: 'Ejemplo: Juan Pérez López',
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa el nombre del emisor';
-                  } 
-                  return null;
-                },
-                onSaved: (value) {
-                  _streetName = value ?? '';
-                },
+                validator: (value) => value == null || value.isEmpty ? 'Por favor ingresa el nombre del emisor' : null,
+                onSaved: (value) => reportModel.emisorName = value ?? '',
               ),
-
-              // Campo para la dirección (rellenado automáticamente)
               const SizedBox(height: 16),
               TextFormField(
                 readOnly: true,
                 decoration: InputDecoration(
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                  ),
-                  labelText: _address,
+                  border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                  labelText: reportModel.address,
                 ),
               ),
-
-              // Dropdown para el tipo de problema
               const SizedBox(height: 16),
               DropdownButtonHideUnderline(
                 child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey), // Color del borde
-                  borderRadius: BorderRadius.circular(12), // Radio del borde
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DropdownButton2<String>(
-                      isExpanded: true,
-                      hint: const Text('Selecciona el tipo de problema'),
-                      items: items.map((String item) {
-                        return DropdownMenuItem<String>(
-                          value: item,
-                          child: Text(item),
-                        );
-                      }).toList(),
-                      value: selectedValue,
-                      onChanged: (value) {
-                        setState(() {
-                          selectedValue = value;
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButton2<String>(
+                        isExpanded: true,
+                        hint: const Text('Selecciona el tipo de problema'),
+                        items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+                        value: reportModel.problemType,
+                        onChanged: (value) => setState(() {
+                          reportModel.problemType = value;
                           _isDropdownError = false;
-                        });
-                      },
-                    ),
-                    if (_isDropdownError)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Por favor selecciona el tipo de problema',
-                          style: TextStyle(color: Colors.red.shade700),
-                        ),
+                        }),
                       ),
-                  ],
+                      if (_isDropdownError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text('Por favor selecciona el tipo de problema', style: TextStyle(color: Colors.red.shade700)),
+                        ),
+                    ],
+                  ),
                 ),
-               ),
               ),
-
-              // Campo para la descripción
               const SizedBox(height: 16),
               TextFormField(
                 decoration: const InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                   labelText: 'Descripción',
                   hintText: 'Describe el problema',
                 ),
                 maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa una descripción';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _description = value ?? '';
-                },
+                validator: (value) => value == null || value.isEmpty ? 'Por favor ingresa una descripción' : null,
+                onSaved: (value) => reportModel.description = value ?? '',
               ),
 
-              // Botón para enviar el reporte
+              // Botón subir imagenes
+              const SizedBox(height: 16),
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    //backgroundColor: const Color(0xFFDE8E8E),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: Colors.grey),
+                  ),
+                  onPressed: () => _pickImage(ImageSource.camera),
+                  icon: const Icon(Icons.add_circle),
+                  label: const Text('Subir Evidencia (Opcional)'),
+                ),
+              ),
+
+              // Mostrar imágenes seleccionadas
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: selectedImages
+                    .map((image) => Image.file(image, width: 80, height: 80, fit: BoxFit.cover))
+                    .toList(),
+              ),
+
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDE8E8E),
-                    foregroundColor: Colors.black, // Color del texto
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: _isLocationAvailable ? () {
+                  onPressed: reportModel.isLocationAvailable ? () async {
                     setState(() {
-                      if (selectedValue == null) {
-                        _isDropdownError = true;
-                      }
+                      if (reportModel.problemType == null) _isDropdownError = true;
                     });
-
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-
-                      int reporteID = DateTime.now().millisecondsSinceEpoch;
-                      FirebaseFirestore.instance.collection('Reporte').add({
-                        'Latitud': _currentPosition?.latitude.toString() ?? 'Sin ubicación',
-                        'Longitud': _currentPosition?.longitude.toString() ?? 'Sin ubicación',
-                        'Descripcion': _description,
-                        'Fecha': DateTime.now().toString(),
-                        'NombreEmisor': _streetName,
-                        'reporteID': reporteID,
-                        'tipoProblema': selectedValue,
-                      }).then((value) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Reporte enviado')),
-                        );
-                      }).catchError((error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error al enviar reporte: $error')),
-                        );
-                      });
+                      try {
+                        await reportController.sendReport(selectedImages);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte enviado')));
+                        _resetForm(); // Limpiar formulario después de enviar
+                      } catch (error) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al enviar reporte: $error')));
+                      }
                     }
-                  } : null, // Desactivar el botón si _isLocationAvailable es false
+                  } : null,
                   child: const Text('Enviar Reporte'),
                 ),
               ),
