@@ -77,7 +77,7 @@ class MapaControlador {
           ? const Center(child: CircularProgressIndicator())
           : GoogleMap(
               onMapCreated: (controller) => _mapController = controller,
-              initialCameraPosition: CameraPosition(target: currentPosition!, zoom: 11.0),
+              initialCameraPosition: CameraPosition(target: currentPosition!, zoom: 17.0),
               markers: _markers.union({
                 Marker(
                   markerId: const MarkerId('currentPosition'),
