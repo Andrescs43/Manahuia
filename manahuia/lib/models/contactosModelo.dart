@@ -96,3 +96,53 @@ class ContactosModelo {
   }
   } 
 }
+
+// login_model.dart
+
+class LoginModel {
+  final String estado;
+  final String latitud;
+  final String longitud;
+  final String nombre;
+  final String password;
+  final int telefono;
+
+  LoginModel({
+    this.estado='No especificado',
+    this.latitud='Sin ubicacion',
+    this.longitud='Sin ubicacion',
+    required this.nombre,
+    required this.password,
+    required this.telefono,
+  });
+
+  // Validación de credenciales mínimas
+  bool isValid() {
+    return telefono.toString().isNotEmpty && password.isNotEmpty;
+  }
+
+  // Convertir el modelo a un mapa para Firebase
+  Map<String, dynamic> toMap() {
+    return {
+      'Estado': estado,
+      'Latitud': latitud,
+      'Longitud': longitud,
+      'Nombre': nombre,
+      'Password': password,
+      'Telefono': telefono,
+    };
+  }
+
+  // Crear el modelo a partir de un documento de Firebase
+  factory LoginModel.fromMap(Map<String, dynamic> map) {
+    return LoginModel(
+      estado: map['Estado'],
+      latitud: map['Latitud'],
+      longitud: map['Longitud'],
+      nombre: map['Nombre'],
+      password: map['Password'],
+      telefono: map['Telefono'],
+    );
+  }
+}
+
