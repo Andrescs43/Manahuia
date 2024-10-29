@@ -23,7 +23,7 @@ class UIMapaZonasOscuras extends StatefulWidget {
 
 class _UIMapaZonasState extends State<UIMapaZonasOscuras> {
   final MapaControlador _controlador = MapaControlador();
-  int _currentIndex = 1;
+  int _currentIndex = 0;
 
   final List<Widget> _pages = [];
 
