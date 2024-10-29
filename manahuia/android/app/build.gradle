@@ -64,4 +64,6 @@ apply plugin: 'com.google.gms.google-services'
 
 dependencies {
     implementation 'com.google.android.gms:play-services-location:21.3.0'
+    implementation 'com.google.firebase:firebase-messaging:23.1.0' // para usar Firebase Cloud Messaging
+
 }
