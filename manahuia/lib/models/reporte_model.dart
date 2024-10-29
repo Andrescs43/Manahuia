@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+
+
 class ReporteModel {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -45,5 +47,64 @@ class ReportModel {
       'reporteID': DateTime.now().millisecondsSinceEpoch,
       'tipoProblema': problemType,
     };
+  }
+}
+
+class ObtenerReportes {
+  final String tipoProblema;
+  final String descripcion;
+  final DateTime fecha;
+  final List<String> imageUrls;
+  final String nombreEmisor;
+  final String latitud;
+  final String longitud;
+  final String? direccion;
+
+  ObtenerReportes({
+    required this.tipoProblema,
+    required this.descripcion,
+    required this.fecha,
+    required this.imageUrls,
+    required this.nombreEmisor,
+    required this.latitud,
+    required this.longitud,
+    this.direccion,
+  });
+
+  // Método para crear una instancia de Reporte a partir de los datos de Firebase
+
+  factory ObtenerReportes.fromFirestore(Map<String, dynamic> data) {
+    return ObtenerReportes(
+      tipoProblema: data['tipoProblema'] ?? 'Desconocido',
+      descripcion: data['Descripcion'] ?? '',
+      fecha: DateTime.parse(data['Fecha']),
+      imageUrls: List<String>.from(data['imageUrls'] ?? []),
+      nombreEmisor: data['NombreEmisor'] ?? '',
+      latitud: data['Latitud'] ?? '',
+      longitud: data['Longitud'] ?? '',
+    );
+  }
+
+  // Implementación de copyWith para crear una copia del reporte con valores modificados
+  ObtenerReportes copyWith({
+    String? tipoProblema,
+    String? descripcion,
+    DateTime? fecha,
+    List<String>? imageUrls,
+    String? nombreEmisor,
+    String? latitud,
+    String? longitud,
+    String? direccion,
+  }) {
+    return ObtenerReportes(
+      tipoProblema: tipoProblema ?? this.tipoProblema,
+      descripcion: descripcion ?? this.descripcion,
+      fecha: fecha ?? this.fecha,
+      imageUrls: imageUrls ?? this.imageUrls,
+      nombreEmisor: nombreEmisor ?? this.nombreEmisor,
+      latitud: latitud ?? this.latitud,
+      longitud: longitud ?? this.longitud,
+      direccion: direccion ?? this.direccion,
+    );
   }
 }
