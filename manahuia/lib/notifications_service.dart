@@ -15,9 +15,11 @@ class NotificationService {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
             'your channel id', 
-            'your channel name',
+            'your_channel_name',
+            channelDescription: 'your_channel_description',
             importance: Importance.max, 
-            priority: Priority.high);
+            priority: Priority.high,
+            icon: 'notif_icon');
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(

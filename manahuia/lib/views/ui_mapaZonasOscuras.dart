@@ -26,7 +26,7 @@ class UIMapaZonasOscuras extends StatefulWidget {
 
 class _UIMapaZonasState extends State<UIMapaZonasOscuras> {
   final MapaControlador _controlador = MapaControlador();
-  int _currentIndex = 1;
+  int _currentIndex = 0;
 
   final List<Widget> _pages = [];
 
@@ -92,7 +92,6 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   // Verificar permisos de notificación
   Future<void> checkNotificationPermission() async {
     final status = await PermissionHandler.Permission.notification.status;
-
     if (!status.isGranted) {
       // Muestra un mensaje si el permiso sigue denegado
       ScaffoldMessenger.of(context).showSnackBar(
