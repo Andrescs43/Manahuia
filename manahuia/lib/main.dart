@@ -6,7 +6,6 @@ import 'views/ui_login.dart';
 import 'package:manahuia/location_service.dart';
 import 'package:manahuia/notifications_service.dart';
 import 'package:manahuia/zones_service.dart';
-
 //Permite a Firebase Cloud Messaging mandar notificaciones en segundo plano.
 //Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   //await Firebase.initializeApp();
@@ -15,10 +14,9 @@ import 'package:manahuia/zones_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   // Inicializar Firebase
   await Firebase.initializeApp();
-
   runApp(MyApp());
 }
 

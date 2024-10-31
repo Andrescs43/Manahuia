@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as loc;
+import 'package:manahuia/models/reporte_model.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import '../models/reporte_model.dart';
 import '../models/contactosModelo.dart';
@@ -9,17 +12,19 @@ class MapaControlador {
   final ReporteModel _reporteModel = ReporteModel();
   final ContactosModelo _contactosModelo = ContactosModelo();
   late GoogleMapController _mapController;
-  final Location _locationController = Location();
+  final loc.Location _locationController = loc.Location();
   BitmapDescriptor? uazonIcon;
   BitmapDescriptor? customIcon;
   BitmapDescriptor? bienIcon;
   BitmapDescriptor? malIcon;
   LatLng? currentPosition;
   bool _serviceEnabled = false;
-  PermissionStatus _permissionGranted = PermissionStatus.denied;
+  loc.PermissionStatus _permissionGranted = loc.PermissionStatus.denied;
   final Set<Marker> _markers = {};
+  final CollectionReference _reportesCollection = FirebaseFirestore.instance.collection('Reporte');
 
-  Future<void> inicializarMapa(BuildContext context, Function actualizarVista) async {
+  Future<void> inicializarMapa(
+      BuildContext context, Function actualizarVista) async {
     await _cargarIconos();
     await _actualizarUbicacion();
     await _cargarMarcadores(actualizarVista, context);
@@ -40,14 +45,16 @@ class MapaControlador {
     }
 
     _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
+    if (_permissionGranted == loc.PermissionStatus.denied) {
       _permissionGranted = await _locationController.requestPermission();
     }
 
-    if (_permissionGranted == PermissionStatus.granted) {
+    if (_permissionGranted == loc.PermissionStatus.granted) {
       _locationController.onLocationChanged.listen((currentLocation) {
-        if (currentLocation.latitude != null && currentLocation.longitude != null) {
-          currentPosition = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+        if (currentLocation.latitude != null &&
+            currentLocation.longitude != null) {
+          currentPosition =
+              LatLng(currentLocation.latitude!, currentLocation.longitude!);
         }
       });
     }

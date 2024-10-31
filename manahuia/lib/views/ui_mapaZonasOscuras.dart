@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:manahuia/models/reporte_model.dart';
 import 'UIListaCE.dart';
 import 'ui_reporte.dart';
 import '../controladores/mapa_controlador.dart';
-import 'package:permission_handler/permission_handler.dart' as PermissionHandler;
+import 'package:permission_handler/permission_handler.dart'
+    as PermissionHandler;
 
 class ManahuiaApp extends StatelessWidget {
   @override
@@ -92,7 +95,8 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
     if (!status.isGranted) {
       // Muestra un mensaje si el permiso sigue denegado
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Permisos de notificación están desactivados.')),
+        const SnackBar(
+            content: Text('Permisos de notificación están desactivados.')),
       );
     }
   }
@@ -103,6 +107,207 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.controlador.obtenerVistaMapa(); // Muestra el mapa con los marcadores
+    return Stack(
+      children: [
+        widget.controlador.obtenerVistaMapa(),
+        Positioned(
+          top: 20,
+          right: 20,
+          child: Tooltip(
+            message: 'Ver listado de reportes',
+            textStyle: const TextStyle(fontSize: 16, color: Colors.white),
+            padding: const EdgeInsets.all(8),
+            child: FloatingActionButton(
+            backgroundColor: Colors.white,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => _verListadoReportes(),
+                ),
+              );
+            },
+            child: const Icon(Icons.list_alt),
+          ),
+          )
+        ),
+      ],
+    );
   }
+}
+
+//Clase para ver el listado de reportes
+class _verListadoReportes extends StatelessWidget {
+  final MapaControlador reportesController = MapaControlador();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Lista de Reportes")),
+      body: StreamBuilder<List<obtenerReportes>>(
+        stream: reportesController.solicitarReportes(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) { //Muestra un indicador de carga
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) { //Si no hay datos muestra un mensaje
+            return const Center(child: Text("No hay reportes disponibles"));
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              var reporte = snapshot.data![index]; //Obtiene el reporte
+              var fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:${reporte.fecha.minute}"; //Formatea la fecha
+
+              if(reporte.fecha.day < 10){ //Agrega un 0 si el día es menor a 10
+                fechaFormateada = "0$fechaFormateada";
+              }
+              if (reporte.fecha.minute < 10) { //Agrega un 0 si los minutos son menores a 10
+                fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:0${reporte.fecha.minute}";
+              }
+              if (reporte.fecha.hour < 10) { //Agrega un 0 si la hora es menor a 10
+                fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
+              }
+
+              return Card( //Muestra los datos del reporte
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  title: Text(
+                    "Reporte: ${reporte.tipoProblema}",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Descripción: ${reporte.descripcion}"),
+                      Text("Fecha: $fechaFormateada"),
+                    ],
+                  ),
+                    trailing: SingleChildScrollView( //Muestra un botón para ver detalles
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_forward_ios),
+                            onPressed: () => _mostrarDetalles(context, reporte),
+                          ),
+                          const Text(
+                            'Ver Detalles',
+                            style: TextStyle(fontSize: 6),
+                          ),
+                        ],
+                      ),
+                    ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  // Método para mostrar el diálogo con detalles
+  void _mostrarDetalles(BuildContext context, obtenerReportes reporte) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        
+        //Sirve para formatear la fecha y no mostrar datos innecesarios
+        var fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:${reporte.fecha.minute}";
+        if(reporte.fecha.day < 10){
+          fechaFormateada = "0$fechaFormateada";
+        }
+        if (reporte.fecha.minute < 10) {
+          fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:0${reporte.fecha.minute}";
+        }
+        if (reporte.fecha.hour < 10) {
+          fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
+        }
+
+        //Muestra un diálogo con los detalles del reporte
+        return AlertDialog(
+          title: const Text('Detalles del Reporte'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                if (reporte.imageUrls.isNotEmpty)
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: reporte.imageUrls.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => _ImageFullscreen(imageUrl: reporte.imageUrls[index]),
+                              ),
+                            ),
+                            child: Image.network(
+                              reporte.imageUrls[index],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                Text("Reporte: ${reporte.tipoProblema}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text("Descripción: ${reporte.descripcion}"),
+                Text("Fecha: $fechaFormateada"),
+                Text("Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}"),
+                Text("Emisor: ${reporte.nombreEmisor}"),
+              ],
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.black, backgroundColor: Colors.red),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('CERRAR'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ImageFullscreen extends StatelessWidget {
+  final String imageUrl;
+
+  const _ImageFullscreen({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 1.0,
+          maxScale: 4.0,
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.contain,
+            width: MediaQuery.of(context).size.width,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// La función main debe estar aquí
+void main() {
+  runApp(ManahuiaApp());
 }
