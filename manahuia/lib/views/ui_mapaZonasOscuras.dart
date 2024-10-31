@@ -4,16 +4,6 @@ import 'ui_reporte.dart';
 import '../controladores/mapa_controlador.dart';
 import 'package:permission_handler/permission_handler.dart' as PermissionHandler;
 
-class ManahuiaApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: UIMapaZonasOscuras(),
-    );
-  }
-}
-
 class UIMapaZonasOscuras extends StatefulWidget {
   const UIMapaZonasOscuras({super.key});
 
@@ -82,7 +72,7 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   @override
   void initState() {
     super.initState();
-    widget.controlador.inicializarMapa(context, actualizarMapa);
+    widget.controlador.inicializarMapa(context, actualizarMapa); // Inicializa el mapa y los marcadores
     checkNotificationPermission();
   }
 
@@ -99,17 +89,11 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   }
 
   void actualizarMapa() {
-    setState(() {});
+    setState(() {}); // Refresca la vista del mapa cuando se agregan los marcadores
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.controlador.obtenerVistaMapa(); // Usar controlador pasado
+    return widget.controlador.obtenerVistaMapa(); // Muestra el mapa con los marcadores
   }
 }
-
-// La función main debe estar aquí
-void main() {
-  runApp(ManahuiaApp());
-}
-

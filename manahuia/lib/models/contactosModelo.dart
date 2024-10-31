@@ -71,6 +71,29 @@ class ContactosModelo {
     }
   }
 
+  // Método genérico para obtener un campo específico de un contacto en Firestore
+  // Método para obtener cualquier campo en Firestore usando el teléfono como identificador
+  Future<String?> obtenerCampo(String telefono, String campo) async {
+    try {
+      // Convierte el teléfono a String en caso de ser necesario para la consulta
+      final telefonoStr = telefono.toString();
+
+      // Obtiene el documento del usuario con el teléfono especificado
+      DocumentSnapshot snapshot = await _firestore.collection('Trabajador').doc(telefonoStr).get();
+
+      // Verifica que el documento existe y obtiene el campo deseado
+      if (snapshot.exists) {
+        return snapshot.get(campo) as String?;
+      } else {
+        print("Documento no encontrado para el teléfono $telefonoStr");
+        return null;
+      }
+    } catch (e) {
+      print('Error al obtener el campo $campo: $e');
+      return null;
+    }
+  }
+
   Future<void> actualizarEstado(String estado, String longitud, String latitud) async {
     String? telefonoActual = await obtenerTelefono(); // Usa await para obtener el valor, pero se tarda culeron
     if (telefonoActual != null && telefonoActual.isNotEmpty) {

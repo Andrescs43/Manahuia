@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import '../models/reporte_model.dart';
+import '../models/contactosModelo.dart';
 
 class MapaControlador {
   final ReporteModel _reporteModel = ReporteModel();
+  final ContactosModelo _contactosModelo = ContactosModelo();
   late GoogleMapController _mapController;
   final Location _locationController = Location();
   BitmapDescriptor? uazonIcon;
   BitmapDescriptor? customIcon;
+  BitmapDescriptor? bienIcon;
+  BitmapDescriptor? malIcon;
   LatLng? currentPosition;
   bool _serviceEnabled = false;
   PermissionStatus _permissionGranted = PermissionStatus.denied;
@@ -17,12 +22,14 @@ class MapaControlador {
   Future<void> inicializarMapa(BuildContext context, Function actualizarVista) async {
     await _cargarIconos();
     await _actualizarUbicacion();
-    await _cargarMarcadores(actualizarVista);
+    await _cargarMarcadores(actualizarVista, context);
   }
 
   Future<void> _cargarIconos() async {
-    uazonIcon = await BitmapDescriptor.asset(const ImageConfiguration(size: Size(24, 24)),'assets/images/circulo.png');
-    customIcon = await BitmapDescriptor.asset(const ImageConfiguration(size: Size(48, 48)),'assets/images/zona.png');
+    uazonIcon = await BitmapDescriptor.asset(const ImageConfiguration(size: Size(24, 24)), 'assets/images/circulo.png');
+    customIcon = await BitmapDescriptor.asset(const ImageConfiguration(size: Size(48, 48)), 'assets/images/zona.png');
+    bienIcon = await BitmapDescriptor.asset(const ImageConfiguration(size: Size(24, 24)), 'assets/images/bien.png');
+    malIcon = await BitmapDescriptor.asset(const ImageConfiguration(size: Size(24, 24)), 'assets/images/mal.png');
   }
 
   Future<void> _actualizarUbicacion() async {
@@ -46,45 +53,108 @@ class MapaControlador {
     }
   }
 
-  Future<void> _cargarMarcadores(Function actualizarVista) async {
-    List<Map<String, dynamic>> zonasOscuras = await _reporteModel.obtenerZonasOscuras();
-    for (var zona in zonasOscuras) {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(zona['id']),
-          position: LatLng(zona['latitud'], zona['longitud']),
-          icon: customIcon!,
+  Future<void> _cargarMarcadores(Function actualizarVista, BuildContext context) async {
+  // Cargar zonas oscuras
+  List<Map<String, dynamic>> zonasOscuras = await _reporteModel.obtenerZonasOscuras();
+  _markers.clear();
+  for (var zona in zonasOscuras) {
+    _markers.add(
+      Marker(
+        markerId: MarkerId(zona['id']),
+        position: LatLng(zona['latitud'], zona['longitud']),
+        icon: customIcon!,
+      ),
+    );
+  }
+
+  // Cargar contactos desde el modelo de contactos
+  _contactosModelo.cargarContactos();
+  List<Contact> contactos = _contactosModelo.obtenerContactos();
+  for (var contacto in contactos) {
+    String? telefono = contacto.phones.isNotEmpty ? contacto.phones.first.number : null;
+
+    if (telefono != null) {
+      // Eliminar el prefijo +52 del número
+      telefono = telefono.replaceFirst('+52', '').replaceAll(' ', '');
+
+      print("Buscando estado para el teléfono: $telefono");
+
+      // Obtener estado y nombre desde Firebase usando el teléfono como identificador
+      String? estado = await _contactosModelo.obtenerEstado(telefono);
+
+      if (estado != null) {
+        print("Estado obtenido para $telefono: $estado");
+
+        // Obtener latitud y longitud desde Firebase usando el teléfono como ID
+        String? latitud = await _contactosModelo.obtenerCampo(telefono, 'Latitud');
+        String? longitud = await _contactosModelo.obtenerCampo(telefono, 'Longitud');
+
+        if (latitud != null && longitud != null) {
+          print("Ubicación obtenida para $telefono - Latitud: $latitud, Longitud: $longitud");
+
+          LatLng posicionContacto = LatLng(double.parse(latitud), double.parse(longitud));
+
+          // Selección de ícono basado en el estado
+          BitmapDescriptor iconoEstado = (estado == 'Bien')
+              ? bienIcon!  // Ícono para "Bien"
+              : malIcon!;  // Ícono para "Mal"
+
+          _markers.add(
+            Marker(
+              markerId: MarkerId(contacto.id),
+              position: posicionContacto,
+              icon: iconoEstado,
+              infoWindow: InfoWindow(
+                title: contacto.displayName,
+                snippet: 'Estado: $estado',
+              ),
+            ),
+          );
+          print("Marcador agregado para $telefono en la posición $posicionContacto");
+        } else {
+          print("Latitud o longitud no disponible para $telefono");
+        }
+      } else {
+        print("No se encontró el estado para el teléfono: $telefono");
+      }
+    } else {
+      print("Contacto sin teléfono válido");
+    }
+  }
+
+  actualizarVista();
+}
+
+
+
+
+
+
+  Widget obtenerVistaMapa() {
+    if (!_serviceEnabled || _permissionGranted == PermissionStatus.denied) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('La ubicación no está habilitada.'),
+            SizedBox(height: 16),
+          ],
         ),
       );
     }
-    actualizarVista();
-  }
 
-    Widget obtenerVistaMapa() {
-      if (!_serviceEnabled || _permissionGranted == PermissionStatus.denied) {
-        return const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('La ubicación no está habilitada.'),
-              SizedBox(height: 16),
-            ],
-          ),
-        );
-      }
-
-      return currentPosition == null
-          ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              onMapCreated: (controller) => _mapController = controller,
-              initialCameraPosition: CameraPosition(target: currentPosition!, zoom: 17.0),
-              markers: _markers.union({
-                Marker(
-                  markerId: const MarkerId('currentPosition'),
-                  icon: uazonIcon ?? BitmapDescriptor.defaultMarker,
-                  position: currentPosition!,
-                ),
-              }),
-            );
-    }
+    return currentPosition == null
+        ? const Center(child: CircularProgressIndicator())
+        : GoogleMap(
+            onMapCreated: (controller) => _mapController = controller,
+            initialCameraPosition: CameraPosition(target: currentPosition!, zoom: 17.0),
+            markers: _markers.union({
+              Marker(
+                markerId: const MarkerId('currentPosition'),
+                icon: uazonIcon ?? BitmapDescriptor.defaultMarker,
+                position: currentPosition!,
+              ),
+            }),
+          );
   }
+}
