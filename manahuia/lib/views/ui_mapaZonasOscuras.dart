@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:manahuia/models/reporte_model.dart';
 import 'UIListaCE.dart';
@@ -11,7 +10,6 @@ class ManahuiaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       home: UIMapaZonasOscuras(),
     );
   }
@@ -137,6 +135,7 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
 }
 
 //Clase para ver el listado de reportes
+//Clase para ver el listado de reportes
 class _verListadoReportes extends StatelessWidget {
   final MapaControlador reportesController = MapaControlador();
 
@@ -226,49 +225,70 @@ class _verListadoReportes extends StatelessWidget {
           fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
         }
 
+        print(reporte.imageUrls);
         //Muestra un diálogo con los detalles del reporte
         return AlertDialog(
           title: const Text('Detalles del Reporte'),
           content: SingleChildScrollView(
-            child: Column(
-              children: [
-                if (reporte.imageUrls.isNotEmpty)
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: reporte.imageUrls.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => _ImageFullscreen(imageUrl: reporte.imageUrls[index]),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: 400, // Puedes ajustar la altura máxima según sea necesario
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (reporte.imageUrls.isNotEmpty)
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: reporte.imageUrls.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => _ImageFullscreen(imageUrl: reporte.imageUrls[index]),
+                                ),
+                              ),
+                              child: Image.network(
+                                reporte.imageUrls[index],
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null 
+                                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1) 
+                                            : null));
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.error, size: 100);
+                                },
                               ),
                             ),
-                            child: Image.network(
-                              reporte.imageUrls[index],
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                Text("Reporte: ${reporte.tipoProblema}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text("Descripción: ${reporte.descripcion}"),
-                Text("Fecha: $fechaFormateada"),
-                Text("Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}"),
-                Text("Emisor: ${reporte.nombreEmisor}"),
-              ],
+                  const SizedBox(height: 8),
+                  Text("Reporte: ${reporte.tipoProblema}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text("Descripción: ${reporte.descripcion}"),
+                  const SizedBox(height: 4),
+                  Text("Fecha: $fechaFormateada"),
+                  const SizedBox(height: 4),
+                  Text("Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}"),
+                  const SizedBox(height: 4),
+                  Text("Emisor: ${reporte.nombreEmisor}"),
+                ],
+              ),
             ),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.black, backgroundColor: Colors.red),
+              style: TextButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.red),
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('CERRAR'),
             ),
