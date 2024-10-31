@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../controladores/reporte_controlador.dart';
 import '../models/reporte_model.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class ReportForm extends StatefulWidget {
   const ReportForm({super.key});
@@ -14,7 +16,7 @@ class _ReportFormState extends State<ReportForm> {
   final _formKey = GlobalKey<FormState>();
   final ReportModel reportModel = ReportModel(
     description: '',
-    streetName: '',
+    emisorName: '',
     address: 'Obteniendo dirección...',
     isLocationAvailable: false,
   );
@@ -22,14 +24,38 @@ class _ReportFormState extends State<ReportForm> {
   bool _isDropdownError = false;
 
   final List<String> items = ['Alumbrado Dañado', 'Sin Alumbrado'];
+  List<File> selectedImages = []; // Lista de imágenes seleccionadas
 
   @override
   void initState() {
     super.initState();
     reportController = ReportController(reportModel);
-    reportController.getCurrentLocation().then((_) => setState(() {}));
+    reportController.getCurrentLocation().then((_) => setState(() {})); // Obtener la ubicación actual
   }
 
+  //Metodo para abrir la camara y tomar la evidencia fotografica
+  Future<void> _pickImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: source, preferredCameraDevice: CameraDevice.rear,); //Camara trasera
+      if (image != null) {
+        setState(() {
+          selectedImages.add(File(image.path));
+        });
+      }
+  }
+
+  // Método para limpiar el formulario
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    reportModel.problemType = null;
+    reportModel.description = '';
+    selectedImages.clear();
+    setState(() {
+      _isDropdownError = false;
+    });
+  }
+
+  // Método para construir el formulario
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -48,7 +74,7 @@ class _ReportFormState extends State<ReportForm> {
                   hintText: 'Ejemplo: Juan Pérez López',
                 ),
                 validator: (value) => value == null || value.isEmpty ? 'Por favor ingresa el nombre del emisor' : null,
-                onSaved: (value) => reportModel.streetName = value ?? '',
+                onSaved: (value) => reportModel.emisorName = value ?? '',
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -98,6 +124,32 @@ class _ReportFormState extends State<ReportForm> {
                 validator: (value) => value == null || value.isEmpty ? 'Por favor ingresa una descripción' : null,
                 onSaved: (value) => reportModel.description = value ?? '',
               ),
+
+              // Botón subir imagenes
+              const SizedBox(height: 16),
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    //backgroundColor: const Color(0xFFDE8E8E),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: Colors.grey),
+                  ),
+                  onPressed: () => _pickImage(ImageSource.camera),
+                  icon: const Icon(Icons.add_circle),
+                  label: const Text('Subir Evidencia (Opcional)'),
+                ),
+              ),
+
+              // Mostrar imágenes seleccionadas
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: selectedImages
+                    .map((image) => Image.file(image, width: 80, height: 80, fit: BoxFit.cover))
+                    .toList(),
+              ),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
@@ -113,8 +165,9 @@ class _ReportFormState extends State<ReportForm> {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
                       try {
-                        await reportController.sendReport();
+                        await reportController.sendReport(selectedImages);
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte enviado')));
+                        _resetForm(); // Limpiar formulario después de enviar
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al enviar reporte: $error')));
                       }

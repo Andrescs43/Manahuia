@@ -65,6 +65,10 @@ class _MyAppState extends State<MyApp> {
         title: 'Manahuia',
         theme: ThemeData(primarySwatch: Colors.blue),
         home: const UIMapaZonasOscuras(),
+  );
+}
+
+
+//Comentario totalmente necesario:
       );
 }*/
-

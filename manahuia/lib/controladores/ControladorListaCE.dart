@@ -5,8 +5,6 @@ import 'package:geolocator/geolocator.dart';
 
 class ControladorListaCE {
   final ContactosModelo contactosService = ContactosModelo();
-  
-
   // Método para obtener un contacto
   Future<Contact?> obtenContacto() async {
     var permissionStatus = await Permission.contacts.status;

@@ -17,10 +17,10 @@ class ReporteModel {
     return zonas;
   }
 }
-
+// Modelo: maneja la informacion del reporte.
 class ReportModel {
   String description;
-  String streetName;
+  String emisorName;
   String address;
   String? problemType;
   Position? currentPosition;
@@ -28,22 +28,23 @@ class ReportModel {
 
   ReportModel({
     required this.description,
-    required this.streetName,
+    required this.emisorName,
     required this.address,
     this.problemType,
     this.currentPosition,
     required this.isLocationAvailable,
   });
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toFirestore(List<String> imageUrls) {
     return {
       'Latitud': currentPosition?.latitude.toString() ?? 'Sin ubicación',
       'Longitud': currentPosition?.longitude.toString() ?? 'Sin ubicación',
       'Descripcion': description,
       'Fecha': DateTime.now().toString(),
-      'NombreEmisor': streetName,
+      'NombreEmisor': emisorName,
       'reporteID': DateTime.now().millisecondsSinceEpoch,
       'tipoProblema': problemType,
+      'imageUrls': imageUrls, // Lista de URLs de las imágenes
     };
   }
 }
