@@ -71,17 +71,17 @@ class MapaControlador {
   }
 
   // Método para obtener un Stream de reportes, ordenados por fecha
-  Stream<List<ObtenerReportes>> obtenerReportes() {
+  Stream<List<obtenerReportes>> solicitarReportes() {
     return _reportesCollection
         .orderBy('Fecha', descending: true)
         .snapshots()
         .asyncMap((snapshot) async {
-          // Mapea cada documento en un Future para agregar la dirección
+          //Mapea cada documento en un Future para agregar la dirección
           var reportes = await Future.wait(snapshot.docs.map((doc) async {
-            var reporte = ObtenerReportes.fromFirestore(doc.data() as Map<String, dynamic>);
-            // Obtener la dirección a partir de la latitud y longitud
+            var reporte = obtenerReportes.fromFirestore(doc.data() as Map<String, dynamic>);
+            //Obtener la dirección a partir de la latitud y longitud
             var direccion = await _obtenerDireccion(reporte.latitud, reporte.longitud);
-            return reporte.copyWith(direccion: direccion); // copia el reporte con la dirección
+            return reporte.copyWith(direccion: direccion); //Copia el reporte con la dirección
           }));
           return reportes;
         });

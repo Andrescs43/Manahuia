@@ -50,7 +50,7 @@ class ReportModel {
   }
 }
 
-class ObtenerReportes {
+class obtenerReportes {
   final String tipoProblema;
   final String descripcion;
   final DateTime fecha;
@@ -60,7 +60,7 @@ class ObtenerReportes {
   final String longitud;
   final String? direccion;
 
-  ObtenerReportes({
+  obtenerReportes({
     required this.tipoProblema,
     required this.descripcion,
     required this.fecha,
@@ -73,8 +73,8 @@ class ObtenerReportes {
 
   // Método para crear una instancia de Reporte a partir de los datos de Firebase
 
-  factory ObtenerReportes.fromFirestore(Map<String, dynamic> data) {
-    return ObtenerReportes(
+  factory obtenerReportes.fromFirestore(Map<String, dynamic> data) {
+    return obtenerReportes(
       tipoProblema: data['tipoProblema'] ?? 'Desconocido',
       descripcion: data['Descripcion'] ?? '',
       fecha: DateTime.parse(data['Fecha']),
@@ -85,8 +85,8 @@ class ObtenerReportes {
     );
   }
 
-  // Implementación de copyWith para crear una copia del reporte con valores modificados
-  ObtenerReportes copyWith({
+  //Implementación de copyWith para crear una copia del reporte con valores modificados
+  obtenerReportes copyWith({
     String? tipoProblema,
     String? descripcion,
     DateTime? fecha,
@@ -96,7 +96,7 @@ class ObtenerReportes {
     String? longitud,
     String? direccion,
   }) {
-    return ObtenerReportes(
+    return obtenerReportes(
       tipoProblema: tipoProblema ?? this.tipoProblema,
       descripcion: descripcion ?? this.descripcion,
       fecha: fecha ?? this.fecha,

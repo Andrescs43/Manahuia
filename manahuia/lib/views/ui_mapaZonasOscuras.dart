@@ -124,7 +124,7 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => _VerListadoReportes(),
+                  builder: (context) => _verListadoReportes(),
                 ),
               );
             },
@@ -137,40 +137,41 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   }
 }
 
-class _VerListadoReportes extends StatelessWidget {
+//Clase para ver el listado de reportes
+class _verListadoReportes extends StatelessWidget {
   final MapaControlador reportesController = MapaControlador();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Lista de Reportes")),
-      body: StreamBuilder<List<ObtenerReportes>>(
-        stream: reportesController.obtenerReportes(),
+      body: StreamBuilder<List<obtenerReportes>>(
+        stream: reportesController.solicitarReportes(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) { //Muestra un indicador de carga
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.isEmpty) { //Si no hay datos muestra un mensaje
             return const Center(child: Text("No hay reportes disponibles"));
           }
 
           return ListView.builder(
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
-              var reporte = snapshot.data![index];
-              var fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:${reporte.fecha.minute}";
+              var reporte = snapshot.data![index]; //Obtiene el reporte
+              var fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:${reporte.fecha.minute}"; //Formatea la fecha
 
-              if(reporte.fecha.day < 10){
+              if(reporte.fecha.day < 10){ //Agrega un 0 si el día es menor a 10
                 fechaFormateada = "0$fechaFormateada";
               }
-              if (reporte.fecha.minute < 10) {
+              if (reporte.fecha.minute < 10) { //Agrega un 0 si los minutos son menores a 10
                 fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:0${reporte.fecha.minute}";
               }
-              if (reporte.fecha.hour < 10) {
+              if (reporte.fecha.hour < 10) { //Agrega un 0 si la hora es menor a 10
                 fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
               }
 
-              return Card(
+              return Card( //Muestra los datos del reporte
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   title: Text(
@@ -184,7 +185,7 @@ class _VerListadoReportes extends StatelessWidget {
                       Text("Fecha: $fechaFormateada"),
                     ],
                   ),
-                    trailing: SingleChildScrollView(
+                    trailing: SingleChildScrollView( //Muestra un botón para ver detalles
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -194,7 +195,7 @@ class _VerListadoReportes extends StatelessWidget {
                           ),
                           const Text(
                             'Ver Detalles',
-                            style: TextStyle(fontSize: 9),
+                            style: TextStyle(fontSize: 6),
                           ),
                         ],
                       ),
@@ -209,7 +210,7 @@ class _VerListadoReportes extends StatelessWidget {
   }
 
   // Método para mostrar el diálogo con detalles
-  void _mostrarDetalles(BuildContext context, ObtenerReportes reporte) {
+  void _mostrarDetalles(BuildContext context, obtenerReportes reporte) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -226,8 +227,7 @@ class _VerListadoReportes extends StatelessWidget {
           fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
         }
 
-
-
+        //Muestra un diálogo con los detalles del reporte
         return AlertDialog(
           title: const Text('Detalles del Reporte'),
           content: SingleChildScrollView(
