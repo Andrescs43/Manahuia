@@ -89,7 +89,6 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   // Verificar permisos de notificación
   Future<void> checkNotificationPermission() async {
     final status = await PermissionHandler.Permission.notification.status;
-
     if (!status.isGranted) {
       // Muestra un mensaje si el permiso sigue denegado
       ScaffoldMessenger.of(context).showSnackBar(
@@ -104,12 +103,6 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.controlador.obtenerVistaMapa(); // Usar controlador pasado
+    return widget.controlador.obtenerVistaMapa(); // Muestra el mapa con los marcadores
   }
 }
-
-// La función main debe estar aquí
-void main() {
-  runApp(ManahuiaApp());
-}
-

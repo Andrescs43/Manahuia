@@ -150,7 +150,6 @@ class _ReportFormState extends State<ReportForm> {
                     .map((image) => Image.file(image, width: 80, height: 80, fit: BoxFit.cover))
                     .toList(),
               ),
-
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
