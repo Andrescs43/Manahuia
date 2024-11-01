@@ -14,21 +14,37 @@ import 'package:manahuia/zones_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
- 
+
   // Inicializar Firebase
   await Firebase.initializeApp();
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final LocationService locationService = LocationService();
+  final NotificationService notificationService = NotificationService();
+  final ZonesService zonesService = ZonesService();
+
+  @override
+  void initState() {
+    super.initState();
+    notificationService.init(); // Inicializar notificaciones
+    zonesService.init(locationService, notificationService); // Inicializar zonas con servicios
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, //Oculta el banner de debug
+      debugShowCheckedModeBanner: false,
       title: 'Manahuia',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/',
       routes: {
         '/': (context) => LoginView(),
