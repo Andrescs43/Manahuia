@@ -40,12 +40,10 @@ class _RegistroViewState extends State<RegistroView> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Registro')),
-      body: Padding(
+  Widget verRegistro(BuildContext context) {
+    return Padding(
         padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -86,8 +84,16 @@ class _RegistroViewState extends State<RegistroView> {
               child: Text('¿Ya tienes una cuenta? Inicia sesión'),
             ),
           ],
-        ),
-      ),
+        )
+      )
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Registro')),
+      body: verRegistro(context), // Llama al método verRegistro
     );
   }
 }

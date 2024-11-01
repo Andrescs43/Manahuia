@@ -29,12 +29,10 @@ class LoginView extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Inicio de Sesión')),
-      body: Padding(
+  Widget verLogin(BuildContext context) {
+      return Padding(
         padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -68,6 +66,14 @@ class LoginView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Inicio de Sesión')),
+      body: verLogin(context), // Llama al método verLogin
     );
   }
 }

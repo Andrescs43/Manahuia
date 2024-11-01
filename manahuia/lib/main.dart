@@ -14,7 +14,7 @@ import 'package:manahuia/zones_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+ 
   // Inicializar Firebase
   await Firebase.initializeApp();
   runApp(MyApp());
