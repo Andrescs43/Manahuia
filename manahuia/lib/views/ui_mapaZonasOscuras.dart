@@ -32,7 +32,7 @@ class _UIMapaZonasState extends State<UIMapaZonasOscuras> {
   void initState() {
     super.initState();
     _pages.addAll([
-      const ReportForm(),
+      const UiReporte(),
       MapaZonaTab(controlador: _controlador), // Pasar controlador aquí
       const ListaCETab(),
     ]);

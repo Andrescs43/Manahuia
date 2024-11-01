@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:manahuia/controladores/reporte_controlador.dart';
 
 
 class ReporteModel {
@@ -19,6 +21,7 @@ class ReporteModel {
     return zonas;
   }
 }
+
 // Modelo: maneja la informacion del reporte.
 class ReportModel {
   String description;
@@ -48,6 +51,12 @@ class ReportModel {
       'tipoProblema': problemType,
       'imageUrls': imageUrls, // Lista de URLs de las imágenes
     };
+  }
+
+  //Enviar reporte
+  Future<void> enviaReporte(List<File> images) async {
+    List<String> imageUrls = images.isNotEmpty ? await ReporteControlador.generaReporte(images) : [];
+    await FirebaseFirestore.instance.collection('Reporte').add(toFirestore(imageUrls));
   }
 }
 

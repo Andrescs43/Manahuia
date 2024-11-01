@@ -6,9 +6,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 
-class ReportController {
+class ReporteControlador {
   final ReportModel reportModel;
-  ReportController(this.reportModel);
+  ReporteControlador(this.reportModel);
 
   // Obtener la ubicación actual
   Future<void> getCurrentLocation() async {
@@ -39,8 +39,8 @@ class ReportController {
     }
   }
 
-  //Agregar imagenes al reporte
-  Future<List<String>> uploadImages(List<File> images) async {
+  //Generar reporte con imagenes
+  static Future<List<String>> generaReporte(List<File> images) async {
     List<String> imageUrls = [];
     for (File image in images) {
       // Lee la imagen como bytes
@@ -74,11 +74,5 @@ class ReportController {
       }
     }
     return imageUrls;
-  }
-
-  //Enviar reporte
-  Future<void> sendReport(List<File> images) async {
-    List<String> imageUrls = images.isNotEmpty ? await uploadImages(images) : [];
-    await FirebaseFirestore.instance.collection('Reporte').add(reportModel.toFirestore(imageUrls));
   }
 }

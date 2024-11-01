@@ -5,14 +5,14 @@ import '../models/reporte_model.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
-class ReportForm extends StatefulWidget {
-  const ReportForm({super.key});
+class UiReporte extends StatefulWidget {
+  const UiReporte({super.key});
 
   @override
-  _ReportFormState createState() => _ReportFormState();
+  _UiReporteState createState() => _UiReporteState();
 }
 
-class _ReportFormState extends State<ReportForm> {
+class _UiReporteState extends State<UiReporte> {
   final _formKey = GlobalKey<FormState>();
   final ReportModel reportModel = ReportModel(
     description: '',
@@ -20,7 +20,7 @@ class _ReportFormState extends State<ReportForm> {
     address: 'Obteniendo dirección...',
     isLocationAvailable: false,
   );
-  late ReportController reportController;
+  late ReporteControlador reportController;
   bool _isDropdownError = false;
 
   final List<String> items = ['Alumbrado Dañado', 'Sin Alumbrado'];
@@ -29,12 +29,12 @@ class _ReportFormState extends State<ReportForm> {
   @override
   void initState() {
     super.initState();
-    reportController = ReportController(reportModel);
+    reportController = ReporteControlador(reportModel);
     reportController.getCurrentLocation().then((_) => setState(() {})); // Obtener la ubicación actual
   }
 
   //Metodo para abrir la camara y tomar la evidencia fotografica
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _tomarImagen(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: source, preferredCameraDevice: CameraDevice.rear,); //Camara trasera
       if (image != null) {
@@ -45,7 +45,7 @@ class _ReportFormState extends State<ReportForm> {
   }
 
   // Método para limpiar el formulario
-  void _resetForm() {
+  void _limpiarFormulario() {
     _formKey.currentState?.reset();
     reportModel.problemType = null;
     reportModel.description = '';
@@ -55,9 +55,8 @@ class _ReportFormState extends State<ReportForm> {
     });
   }
 
-  // Método para construir el formulario
-  @override
-  Widget build(BuildContext context) {
+  // Método para construir el formulario de reporte
+  Widget verFormularioReporte() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SingleChildScrollView(
@@ -135,7 +134,7 @@ class _ReportFormState extends State<ReportForm> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     side: const BorderSide(color: Colors.grey),
                   ),
-                  onPressed: () => _pickImage(ImageSource.camera),
+                  onPressed: () => _tomarImagen(ImageSource.camera),
                   icon: const Icon(Icons.add_circle),
                   label: const Text('Subir Evidencia (Opcional)'),
                 ),
@@ -165,9 +164,9 @@ class _ReportFormState extends State<ReportForm> {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
                       try {
-                        await reportController.sendReport(selectedImages);
+                        await reportModel.enviaReporte(selectedImages);
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte enviado')));
-                        _resetForm(); // Limpiar formulario después de enviar
+                        _limpiarFormulario(); // Limpiar formulario después de enviar
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al enviar reporte: $error')));
                       }
@@ -181,5 +180,10 @@ class _ReportFormState extends State<ReportForm> {
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return verFormularioReporte();
   }
 }
