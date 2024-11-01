@@ -23,6 +23,7 @@ class _ListaCETabState extends State<ListaCETab> {
   void initState() {
     super.initState();
     cargarContactos();
+    cargarEstado();
   }
 
   Future<void> cargarContactos() async {
@@ -70,21 +71,46 @@ class _ListaCETabState extends State<ListaCETab> {
   }
 
  //cambia colores de la interfaz
-  void actualizarEstado(bool estoyBien) {
+  void actualizarEstado(bool estoyBien) async {
     setState(() {
-      if (estoyBien) {
+        if (estoyBien) {
         mensajeColor = Colors.green;
         mensajeTexto = "Tus contactos verán que estás bien";
         contactosController.actualizarEstado("Bien");
         botonColorBien = Colors.green;
         botonColorMal = Colors.black;
-      } else {
+      }  else {
         mensajeColor = Colors.red;
         mensajeTexto =
             "Mostraremos a tus contactos que te encuentras mal.\nPonte en contacto con ellos lo más rápido posible.";
             contactosController.actualizarEstado("Mal");
         botonColorBien = Colors.black;
         botonColorMal = Colors.red;
+      }
+    });
+  }
+
+  //carga el estado desde el controlador
+  Future<void> cargarEstado() async {
+    await contactosController.cargarTelefonoYEstado();
+    String estadoActual = contactosController.obtenerEstado();
+    setState(() {
+      if (estadoActual == "Bien") {
+        mensajeColor = Colors.green;
+        mensajeTexto = "Tus contactos verán que estás bien";
+        botonColorBien = Colors.green;
+        botonColorMal = Colors.black;
+      } else if (estadoActual == "Mal") {
+        mensajeColor = Colors.red;
+        mensajeTexto =
+            "Mostraremos a tus contactos que te encuentras mal.\nPonte en contacto con ellos lo más rápido posible.";
+        botonColorBien = Colors.black;
+        botonColorMal = Colors.red;
+      } else {
+        mensajeColor = Colors.black;
+        mensajeTexto = "Dile a tus contactos cómo estás:";
+        botonColorBien = Colors.black;
+        botonColorMal = Colors.black;
       }
     });
   }

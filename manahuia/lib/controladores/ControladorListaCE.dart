@@ -5,6 +5,13 @@ import 'package:geolocator/geolocator.dart';
 
 class ControladorListaCE {
   final ContactosModelo contactosService = ContactosModelo();
+  String telefono = '';
+  String estado = '';
+
+  Future<void> cargarTelefonoYEstado() async {
+    telefono = await contactosService.obtenerTelefono() ?? "";
+    estado = await contactosService.obtenerEstado(telefono) ?? "";
+  }
   // Método para obtener un contacto
   Future<Contact?> obtenContacto() async {
     var permissionStatus = await Permission.contacts.status;
@@ -39,12 +46,16 @@ class ControladorListaCE {
     contactosService.actualizarEstado(estado, longitud, latitud);
   }
 
-  String obtenerEstado(String telefono){
-    String estado = contactosService.obtenerEstado(telefono) as String;
-    if (estado != ""){
-      return estado;
-    } else {
-      return "";
-    }
-  }
+  //String obtenerEstado(String telefono){
+    //String estado = contactosService.obtenerEstado(telefono) as String;
+    //if (estado != ""){
+      //return estado;
+    //} else {
+      //return "";
+    //}
+  //}
+
+  String obtenerTelefono() => telefono;
+
+  String obtenerEstado() => estado;
 }
