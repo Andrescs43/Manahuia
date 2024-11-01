@@ -118,3 +118,25 @@ class obtenerReportes {
     );
   }
 }
+
+class NotificacionesModel {
+  double latitud;
+  double longitud;
+
+  NotificacionesModel({required this.latitud, required this.longitud});
+
+  // Constructor para crear un NotificacionesModel desde un documento de Firestore
+  factory NotificacionesModel.fromFirestore(DocumentSnapshot doc) {
+    return NotificacionesModel(
+      latitud: double.parse(doc['Latitud'] ?? '0.0'),
+      longitud: double.parse(doc['Longitud'] ?? '0.0'),
+    );
+  }
+
+  // Método estático para obtener todas las zonas oscuras desde Firestore
+  static Future<List<NotificacionesModel>> obtenerZonasOscuras() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot snapshot = await firestore.collection('Reporte').get();
+    return snapshot.docs.map((doc) => NotificacionesModel.fromFirestore(doc)).toList();
+  }
+}

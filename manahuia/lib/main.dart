@@ -3,9 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'views/ui_mapaZonasOscuras.dart';
 import 'views/ui_login.dart';
-import 'package:manahuia/location_service.dart';
-import 'package:manahuia/notifications_service.dart';
-import 'package:manahuia/zones_service.dart';
 //Permite a Firebase Cloud Messaging mandar notificaciones en segundo plano.
 //Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   //await Firebase.initializeApp();
@@ -28,15 +25,15 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final LocationService locationService = LocationService();
-  final NotificationService notificationService = NotificationService();
-  final ZonesService zonesService = ZonesService();
+  //final LocationService locationService = LocationService();
+  //final NotificationService notificationService = NotificationService();
+  //final ZonesService zonesService = ZonesService();
 
   @override
   void initState() {
     super.initState();
-    notificationService.init(); // Inicializar notificaciones
-    zonesService.init(locationService, notificationService); // Inicializar zonas con servicios
+    //notificationService.init(); // Inicializar notificaciones
+    //zonesService.init(locationService, notificationService); // Inicializar zonas con servicios
   }
 
   @override

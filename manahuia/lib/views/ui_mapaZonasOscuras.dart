@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:manahuia/controladores/notificaciones_controlador.dart';
 import 'package:manahuia/models/reporte_model.dart';
 import 'UIListaCE.dart';
 import 'ui_reporte.dart';
 import '../controladores/mapa_controlador.dart';
 import 'package:permission_handler/permission_handler.dart'
     as PermissionHandler;
+import 'package:cached_network_image/cached_network_image.dart';
+
 
 class ManahuiaApp extends StatelessWidget {
   @override
@@ -80,9 +83,13 @@ class MapaZonaTab extends StatefulWidget {
 }
 
 class _MapaZonaTabState extends State<MapaZonaTab> {
+
+  final NotificacionesControl notificacionesControl = NotificacionesControl();
+
   @override
   void initState() {
     super.initState();
+    notificacionesControl.iniciar(); // Iniciar notificaciones
     widget.controlador.inicializarMapa(context, actualizarMapa);
     checkNotificationPermission();
   }
@@ -134,7 +141,8 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   }
 }
 
-//Clase para ver el listado de reportes
+
+
 //Clase para ver el listado de reportes
 class _verListadoReportes extends StatelessWidget {
   final MapaControlador reportesController = MapaControlador();
@@ -207,7 +215,7 @@ class _verListadoReportes extends StatelessWidget {
     );
   }
 
-  // Método para mostrar el diálogo con detalles
+  // Método para mostrar la pantalla con detalles
   void _mostrarDetalles(BuildContext context, obtenerReportes reporte) {
     showDialog(
       context: context,
@@ -225,64 +233,71 @@ class _verListadoReportes extends StatelessWidget {
           fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
         }
 
-        print(reporte.imageUrls);
         //Muestra un diálogo con los detalles del reporte
         return AlertDialog(
-          title: const Text('Detalles del Reporte'),
+          //title: const Text('Detalles del Reporte'),
           content: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: 400, // Puedes ajustar la altura máxima según sea necesario
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (reporte.imageUrls.isNotEmpty)
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: reporte.imageUrls.length,
-                        itemBuilder: (context, index) {
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (reporte.imageUrls.isNotEmpty)
+                  SizedBox(
+                    height: 200,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: reporte.imageUrls.map((imageUrl) {
                           return Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: GestureDetector(
                               onTap: () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => _ImageFullscreen(imageUrl: reporte.imageUrls[index]),
+                                  builder: (context) => _ImageFullscreen(imageUrl: imageUrl),
                                 ),
                               ),
-                              child: Image.network(
-                                reporte.imageUrls[index],
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null 
-                                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1) 
-                                            : null));
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.error, size: 100);
-                                },
+                                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) => const Icon(Icons.error, size: 100),
+                                width: 120, // Ajuste de tamaño para evitar problemas de renderizado
                               ),
                             ),
                           );
-                        },
+                        }).toList(),
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  Text("Reporte: ${reporte.tipoProblema}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text("Descripción: ${reporte.descripcion}"),
-                  const SizedBox(height: 4),
-                  Text("Fecha: $fechaFormateada"),
-                  const SizedBox(height: 4),
-                  Text("Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}"),
-                  const SizedBox(height: 4),
-                  Text("Emisor: ${reporte.nombreEmisor}"),
-                ],
-              ),
+                  ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        "Reporte: ${reporte.tipoProblema}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        "Descripción: ${reporte.descripcion}",
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        "Fecha: $fechaFormateada",
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        "Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}",
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        "Emisor: ${reporte.nombreEmisor}",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           actionsAlignment: MainAxisAlignment.center,
@@ -316,10 +331,12 @@ class _ImageFullscreen extends StatelessWidget {
         child: InteractiveViewer(
           minScale: 1.0,
           maxScale: 4.0,
-          child: Image.network(
-            imageUrl,
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
             fit: BoxFit.contain,
             width: MediaQuery.of(context).size.width,
+            placeholder: (context, url) => const CircularProgressIndicator(),
+            errorWidget: (context, url, error) => const Icon(Icons.error, size: 100),
           ),
         ),
       ),
