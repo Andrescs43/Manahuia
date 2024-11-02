@@ -3,11 +3,32 @@ import 'package:flutter/material.dart';
 import '../views/ui_registro.dart';
 import '../controladores/login_controlador.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
+  @override
+  _LoginViewState createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
   final _telefonoController = TextEditingController();
   final _passwordController = TextEditingController();
   final LoginController _controller = LoginController();
 
+  @override
+  void initState() {
+    super.initState();
+    _verificarSesionActiva();
+  }
+
+  // Verificar si hay una sesión activa
+  void _verificarSesionActiva() async {
+    bool sesionActiva = await _controller.verificarSesionActiva();
+    if (sesionActiva) {
+      // Redirigir directamente a la pantalla principal
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
+
+  // Método para iniciar sesión
   void _iniciarSesion(BuildContext context) async {
     final telefonoText = _telefonoController.text;
     final password = _passwordController.text;
@@ -25,14 +46,14 @@ class LoginView extends StatelessWidget {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
       // Mostrar error
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error de inicio de sesion')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error de inicio de sesión')));
     }
   }
 
   Widget verLogin(BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

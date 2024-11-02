@@ -7,6 +7,7 @@ import '../controladores/mapa_controlador.dart';
 import 'package:permission_handler/permission_handler.dart'
     as PermissionHandler;
 import 'package:cached_network_image/cached_network_image.dart';
+import '../controladores/login_controlador.dart';
 
 
 class ManahuiaApp extends StatelessWidget {
@@ -41,37 +42,52 @@ class _UIMapaZonasState extends State<UIMapaZonasOscuras> {
     ]);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Manahuia')),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Reporte',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.place),
-            label: 'Mapa',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.contacts),
-            label: 'Contactos',
-          ),
-        ],
-      ),
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Manahuia'),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () async {
+            // Llama al controlador para cerrar la sesión
+            await LoginController().cerrarSesion();
+            // Redirige a la pantalla de inicio de sesión
+            Navigator.pushReplacementNamed(context, '/');
+          },
+          tooltip: 'Cerrar sesión',
+        ),
+      ],
+    ),
+    body: _pages[_currentIndex],
+    bottomNavigationBar: BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (int index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      showUnselectedLabels: false,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.assignment),
+          label: 'Reporte',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.place),
+          label: 'Mapa',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.contacts),
+          label: 'Contactos',
+        ),
+      ],
+    ),
+  );
 }
+}
+
 
 class MapaZonaTab extends StatefulWidget {
   final MapaControlador controlador; // Recibe el controlador
