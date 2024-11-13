@@ -222,7 +222,7 @@ class _ListaCETabState extends State<ListaCETab> {
                           child: Center(
                             child: Text(
                               mensajeTexto,
-                              style: TextStyle(color: Colors.white, fontSize: 12),
+                              style: TextStyle(color: Colors.white, fontSize: 11),
                               textAlign: TextAlign.center,
                             ),
                           ),
