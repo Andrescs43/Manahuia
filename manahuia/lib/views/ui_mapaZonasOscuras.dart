@@ -105,7 +105,7 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   @override
   void initState() {
     super.initState();
-    notificacionesControl.iniciar(); // Iniciar notificaciones
+    notificacionesControl.iniciarNotificaciones(); // Iniciar notificaciones
     widget.controlador.inicializarMapa(context, actualizarMapa);
     checkNotificationPermission();
   }

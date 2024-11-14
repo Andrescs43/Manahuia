@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/contactosModelo.dart';
+import '../models/trabajadorModelo.dart';
 
 class LoginController {
   final CollectionReference usuariosCollection = FirebaseFirestore.instance.collection('Trabajador');

@@ -75,4 +75,10 @@ class ReporteControlador {
     }
     return imageUrls;
   }
+
+  //Enviar reporte
+  Future<void> enviaReporte(List<File> images) async {
+    List<String> imageUrls = images.isNotEmpty ? await generaReporte(images) : [];
+    await FirebaseFirestore.instance.collection('Reporte').add(reportModel.toFirestore(imageUrls));
+  }
 }

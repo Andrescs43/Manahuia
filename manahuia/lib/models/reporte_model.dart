@@ -30,6 +30,11 @@ class ReportModel {
   String? problemType;
   Position? currentPosition;
   bool isLocationAvailable;
+  int reporteID;
+  String fecha;
+  String Latitud;
+  String Longitud;
+  List imageUrls;
 
   ReportModel({
     required this.description,
@@ -38,6 +43,11 @@ class ReportModel {
     this.problemType,
     this.currentPosition,
     required this.isLocationAvailable,
+    this.reporteID = 0,
+    this.fecha = '',
+    this.Latitud = '',
+    this.Longitud = '',
+    this.imageUrls = const [],
   });
 
   Map<String, dynamic> toFirestore(List<String> imageUrls) {
@@ -54,10 +64,10 @@ class ReportModel {
   }
 
   //Enviar reporte
-  Future<void> enviaReporte(List<File> images) async {
-    List<String> imageUrls = images.isNotEmpty ? await ReporteControlador.generaReporte(images) : [];
-    await FirebaseFirestore.instance.collection('Reporte').add(toFirestore(imageUrls));
-  }
+  //Future<void> enviaReporte(List<File> images) async {
+  //  List<String> imageUrls = images.isNotEmpty ? await ReporteControlador.generaReporte(images) : [];
+  //  await FirebaseFirestore.instance.collection('Reporte').add(toFirestore(imageUrls));
+  //}
 }
 
 class obtenerReportes {

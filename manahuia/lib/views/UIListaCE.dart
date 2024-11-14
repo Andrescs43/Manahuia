@@ -71,7 +71,7 @@ class _ListaCETabState extends State<ListaCETab> {
   }
 
  //cambia colores de la interfaz
-  void actualizarEstado(bool estoyBien) async {
+  void eligeEstado(bool estoyBien) async {
     setState(() {
         if (estoyBien) {
         mensajeColor = Colors.green;
@@ -236,7 +236,7 @@ class _ListaCETabState extends State<ListaCETab> {
                                 IconButton(
                                   icon: Icon(Icons.thumb_up_alt_outlined),
                                   color: botonColorBien,
-                                  onPressed: () => actualizarEstado(true),
+                                  onPressed: () => eligeEstado(true),
                                 ),
                                 const Text("Estoy bien", style: TextStyle(fontSize: 10)),
                               ],
@@ -246,7 +246,7 @@ class _ListaCETabState extends State<ListaCETab> {
                                 IconButton(
                                   icon: Icon(Icons.thumb_down_alt_outlined),
                                   color: botonColorMal,
-                                  onPressed: () => actualizarEstado(false),
+                                  onPressed: () => eligeEstado(false),
                                 ),
                                 const Text("Estoy mal", style: TextStyle(fontSize: 10)),
                               ],

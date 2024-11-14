@@ -1,4 +1,4 @@
-import 'package:manahuia/models/contactosModelo.dart';
+import 'package:manahuia/models/trabajadorModelo.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:geolocator/geolocator.dart';
@@ -43,7 +43,7 @@ class ControladorListaCE {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     String longitud = position.longitude.toString();
     String latitud = position.latitude.toString();
-    contactosService.actualizarEstado(estado, longitud, latitud);
+    contactosService.guardaEstado(estado, longitud, latitud);
   }
 
   //String obtenerEstado(String telefono){
