@@ -130,6 +130,22 @@ class ContactosModelo {
     return prefs.getString('telefono'); // Devuelve el valor como String
   }
 
+  Future<void> actualizaMensajeFirebase(String mensaje) async {
+    try{
+      String? telefonoActual = await obtenerTelefono(); // Usa await para obtener el valor, pero se tarda culeron
+    if (telefonoActual != null && telefonoActual.isNotEmpty) {
+      // Actualiza el documento del Trabajador en Firestore con el nuevo token
+      await _firestore.collection('Trabajador').doc(telefonoActual).update({
+        'Mensaje': mensaje,
+      });
+    } else {
+      print("No se pudo actualizar el estado: Teléfono no disponible.");
+    }
+    } catch (e){
+      print("Error: $e");
+    }
+  }
+
 }
 
 // login_model.dart

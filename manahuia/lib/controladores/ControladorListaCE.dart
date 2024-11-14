@@ -39,7 +39,7 @@ class ControladorListaCE {
     return contactosService.obtenerContactos();
   }
 
-  void actualizarEstado(String estado,) async{
+  void actualizarEstado(String estado) async{
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     String longitud = position.longitude.toString();
     String latitud = position.latitude.toString();
@@ -58,4 +58,17 @@ class ControladorListaCE {
   String obtenerTelefono() => telefono;
 
   String obtenerEstado() => estado;
+
+//Este metodo verifica si un texto esta vacio
+  int verificaVacio(String texto){
+    if (texto.isEmpty){
+      return 0;
+    } else {
+      return 1;
+    }
+  }
+
+  void guardaMensaje(String mensaje){
+    contactosService.actualizaMensajeFirebase(mensaje); 
+  }
 }

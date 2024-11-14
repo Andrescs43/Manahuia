@@ -18,6 +18,7 @@ class _ListaCETabState extends State<ListaCETab> {
   String mensajeTexto = "Dile a tus contactos cómo estás:";
   Color botonColorBien = Colors.black;
   Color botonColorMal = Colors.black;
+  final _mensajeController = TextEditingController();
   
   @override
   void initState() {
@@ -64,6 +65,97 @@ class _ListaCETabState extends State<ListaCETab> {
         ],
       ),
     );
+  }
+void muestraCampoMensaje() {
+  bool isError = false;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text("Escribe un mensaje de estado."),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Escribe un texto a tus contactos para que sepan de ti:"),
+              TextField(
+                controller: _mensajeController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: isError ? Colors.red : Colors.grey),
+                  ),
+                  labelText: 'Escribe un mensaje...',
+                ),
+              ),
+              if (isError) // Si hay error, mostramos el mensaje
+                const Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    'Por favor, escribe un mensaje.',
+                    style: TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cerrar"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(222, 142, 142, 1),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    int respuesta = contactosController.verificaVacio(_mensajeController.text.trim());
+                    if (respuesta != 1) {
+                      setState(() {
+                        isError = true; // Activa el mensaje de error si el campo está vacío
+                      });
+                      print("Este es un texto vacío.");
+                    } else {
+                      enviaMensaje(_mensajeController.text);
+                      Navigator.pop(context);
+                      // Muestra un SnackBar de confirmación
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("¡Mensaje enviado! Tus contactos lo podrán ver."),
+                          backgroundColor: Colors.grey,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text("Enviar"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(142, 174, 222, 1),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/*
+  Metodo encargado de mandar al controlador el mensaje para que lo verifique y sea enviado
+*/
+  void enviaMensaje(String mensaje){
+    print("Obtuve el mensaje de: "+mensaje);
+    contactosController.guardaMensaje(mensaje);
   }
 
   void verContacto(Contact contacto) async {
@@ -260,11 +352,20 @@ class _ListaCETabState extends State<ListaCETab> {
             top: 5,
             left: 5,
             child: IconButton(
-              iconSize: 50,
+              iconSize: 40,
               onPressed: agregarContactoNuevo,
               icon: Icon(Icons.add),
             ),
           ),
+          Positioned(
+            top: 50,
+            left: 5,
+            child: IconButton(
+              iconSize: 35,
+              onPressed: (){ muestraCampoMensaje();}, //por definir
+              icon: Icon(Icons.edit_square)
+              )
+            ),
         ],
       ),
     );
