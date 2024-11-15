@@ -20,6 +20,40 @@ class ReporteModel {
     }
     return zonas;
   }
+
+  Future<void> enviaResena(obtenerReportes reporte, String resena) async {
+    try {
+      // Asegúrate de que el reporteID esté en el tipo correcto
+      final dynamic reporteID = int.tryParse(reporte.reporteID.toString()) ?? reporte.reporteID;
+
+      print("ReporteID: $reporteID");
+      // Obtener la referencia de la colección
+      CollectionReference reportesCollection = FirebaseFirestore.instance.collection('Reporte');
+
+      // Realizar una consulta para encontrar el documento con el reporteID específico
+      QuerySnapshot querySnapshot = await reportesCollection.where('reporteID', isEqualTo: reporteID).get();
+
+      print("Documentos encontrados: ${querySnapshot.docs.length}");
+
+      // Verificar que se encontró al menos un documento
+      if (querySnapshot.docs.isNotEmpty) {
+        // Obtener la referencia del primer documento encontrado
+        DocumentReference reporteRef = querySnapshot.docs.first.reference;
+
+        // Intentar la actualización
+        await reporteRef.update({
+          'resenas': FieldValue.arrayUnion([resena])
+        });
+
+        print("Reseña agregada exitosamente.");
+      } else {
+        print("No se encontró el reporte con el ID especificado.");
+      }
+    } catch (e) {
+      print("Error al agregar reseña: $e");
+    }
+  }
+
 }
 
 // Modelo: maneja la informacion del reporte.
@@ -30,6 +64,7 @@ class ReportModel {
   String? problemType;
   Position? currentPosition;
   bool isLocationAvailable;
+  List<String> resenas = [];
 
   ReportModel({
     required this.description,
@@ -50,6 +85,7 @@ class ReportModel {
       'reporteID': DateTime.now().millisecondsSinceEpoch,
       'tipoProblema': problemType,
       'imageUrls': imageUrls, // Lista de URLs de las imágenes
+      'resenas': resenas,
     };
   }
 
@@ -61,6 +97,7 @@ class ReportModel {
 }
 
 class obtenerReportes {
+  final int reporteID;
   final String tipoProblema;
   final String descripcion;
   final DateTime fecha;
@@ -69,8 +106,10 @@ class obtenerReportes {
   final String latitud;
   final String longitud;
   final String? direccion;
+  final List<String>? resenas;
 
   obtenerReportes({
+    required this.reporteID,
     required this.tipoProblema,
     required this.descripcion,
     required this.fecha,
@@ -79,12 +118,14 @@ class obtenerReportes {
     required this.latitud,
     required this.longitud,
     this.direccion,
+    this.resenas,
   });
 
   // Método para crear una instancia de Reporte a partir de los datos de Firebase
 
   factory obtenerReportes.fromFirestore(Map<String, dynamic> data) {
     return obtenerReportes(
+      reporteID: data['reporteID'],
       tipoProblema: data['tipoProblema'] ?? 'Desconocido',
       descripcion: data['Descripcion'] ?? '',
       fecha: DateTime.parse(data['Fecha']),
@@ -92,11 +133,13 @@ class obtenerReportes {
       nombreEmisor: data['NombreEmisor'] ?? '',
       latitud: data['Latitud'] ?? '',
       longitud: data['Longitud'] ?? '',
+      resenas: List<String>.from(data['resenas'] ?? []),
     );
   }
 
   //Implementación de copyWith para crear una copia del reporte con valores modificados
   obtenerReportes copyWith({
+    int? reporteID,
     String? tipoProblema,
     String? descripcion,
     DateTime? fecha,
@@ -105,8 +148,10 @@ class obtenerReportes {
     String? latitud,
     String? longitud,
     String? direccion,
+    List<String>? resenas,
   }) {
     return obtenerReportes(
+      reporteID: reporteID ?? this.reporteID,
       tipoProblema: tipoProblema ?? this.tipoProblema,
       descripcion: descripcion ?? this.descripcion,
       fecha: fecha ?? this.fecha,
@@ -115,6 +160,7 @@ class obtenerReportes {
       latitud: latitud ?? this.latitud,
       longitud: longitud ?? this.longitud,
       direccion: direccion ?? this.direccion,
+      resenas: resenas ?? this.resenas,
     );
   }
 }

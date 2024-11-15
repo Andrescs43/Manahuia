@@ -161,14 +161,14 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
 
 //Clase para ver el listado de reportes
 class _verListadoReportes extends StatelessWidget {
-  final MapaControlador reportesController = MapaControlador();
+  final MapaControlador mapasController = MapaControlador();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Lista de Reportes")),
       body: StreamBuilder<List<obtenerReportes>>(
-        stream: reportesController.solicitarReportes(),
+        stream: mapasController.solicitarReportes(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) { //Muestra un indicador de carga
             return const Center(child: CircularProgressIndicator());
@@ -233,6 +233,8 @@ class _verListadoReportes extends StatelessWidget {
 
   // Método para mostrar la pantalla con detalles
   void _mostrarDetalles(BuildContext context, obtenerReportes reporte) {
+    final TextEditingController resenaController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -311,6 +313,58 @@ class _verListadoReportes extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                     ],
+                  ),
+                ),
+              
+                //Sección para mostrar las reseñas
+                const Divider(),
+                const Text("Reseñas", style: TextStyle(fontWeight: FontWeight.bold)),
+                if (reporte.resenas!.isNotEmpty)
+                  SizedBox(
+                    height: 200, // Ajusta la altura según sea necesario
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: reporte.resenas!.map((resena) {
+                            return Column(
+                              children: [
+                                ListTile(
+                                  title: Text(resena),
+                                ),
+                                const Divider(), // Agrega un divisor por cada reseña
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                  )
+                else
+                  const Text("No hay reseñas disponibles"),
+
+                const SizedBox(height: 8),
+
+                //Sección para añadir reseñas
+                TextField(
+                  controller: resenaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Añadir reseña',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: ElevatedButton(
+                  onPressed: () async {
+                    // Lógica para enviar la reseña
+                    final textoResena = resenaController.text.trim();
+                    if (textoResena.isNotEmpty) {
+                      print("Reseña a enviar: $textoResena");
+                      await mapasController.agregarResena(reporte, textoResena);
+                      resenaController.clear(); // Limpia el campo tras enviar
+                    } else {
+                      print("Campo de reseña vacío. No se enviará.");
+                    }
+                  },
+                  child: const Text('Enviar Reseña'),
                   ),
                 ),
               ],

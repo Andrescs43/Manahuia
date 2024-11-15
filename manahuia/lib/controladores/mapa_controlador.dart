@@ -8,6 +8,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import '../models/contactosModelo.dart';
 
 class MapaControlador {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final ReporteModel _reporteModel = ReporteModel();
   final ContactosModelo _contactosModelo = ContactosModelo();
   late GoogleMapController _mapController;
@@ -142,7 +143,7 @@ class MapaControlador {
     }
   }
 
-Stream<List<obtenerReportes>> solicitarReportes() {
+  Stream<List<obtenerReportes>> solicitarReportes() {
     return _reportesCollection
         .orderBy('Fecha', descending: true)
         .snapshots()
@@ -159,7 +160,55 @@ Stream<List<obtenerReportes>> solicitarReportes() {
         //.map((snapshot) => snapshot.docs.map((doc) => ObtenerReportes.fromFirestore(doc.data() as Map<String, dynamic>)).toList());
   }
 
+  /* Future<void> agregarResena(obtenerReportes reporte, String resena) async {
+  try {
+    // Asegúrate de que el reporteID está en formato String
+    //final String reporteID = reporte.reporteID.toString();
 
+    // Obtener la referencia de la colección
+    CollectionReference reportesCollection = FirebaseFirestore.instance.collection('Reporte');
+
+    // Obtener la referencia del documento específico usando reporteID
+    DocumentReference reporteRef = reportesCollection.doc('T5zByz1KztPBa34AKx9G');
+
+    // Intentar la actualización
+    await reporteRef.update({
+      'resenas': FieldValue.arrayUnion([resena])
+    });
+
+    print("Reseña agregada exitosamente.");
+  } catch (e) {
+    print("Error al agregar reseña: $e");
+    }
+  } */
+
+ Future<void> agregarResena(obtenerReportes reporte, String resena) async {
+    _reporteModel.enviaResena(reporte, resena);
+ }
+
+/*
+ Future<void> agregarResena(obtenerReportes reporte, String resena) async {
+    try {
+      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance.collection('Reporte').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            for (var doc in snapshot.data!.docs) {
+              if (doc['reporteID'] == reporte.reporteID) {
+                List<String> resenas = List<String>.from(doc['resenas']);
+                resenas.add(resena);
+                doc.reference.update({'resenas': resenas});
+              }
+            }
+          }
+          return Container(); // Return an empty container or any other widget
+        },
+      );
+    } catch (e) {
+      print('No se puedo enviar la reseña: '+e.toString());
+    }
+  }
+  */
 
   Widget obtenerVistaMapa() {
     if (!_serviceEnabled || _permissionGranted == loc.PermissionStatus.denied) {
@@ -188,4 +237,5 @@ Stream<List<obtenerReportes>> solicitarReportes() {
             }),
           );
   }
+
 }
