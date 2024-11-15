@@ -4,13 +4,13 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:geolocator/geolocator.dart';
 
 class ControladorListaCE {
-  final ContactosModelo contactosService = ContactosModelo();
+  final ContactosModelo contactosModel = ContactosModelo();
   String telefono = '';
   String estado = '';
 
   Future<void> cargarTelefonoYEstado() async {
-    telefono = await contactosService.obtenerTelefono() ?? "";
-    estado = await contactosService.obtenerEstado(telefono) ?? "";
+    telefono = await contactosModel.obtenerTelefono() ?? "";
+    estado = await contactosModel.obtenerEstado(telefono) ?? "";
   }
   // Método para obtener un contacto
   Future<Contact?> obtenContacto() async {
@@ -22,7 +22,7 @@ class ControladorListaCE {
     } else {
       final contacto = await FlutterContacts.openExternalPick();
       if (contacto != null) {
-        contactosService.agregarContacto(contacto);
+        contactosModel.agregarContacto(contacto);
         return contacto;
       }
     }
@@ -31,19 +31,19 @@ class ControladorListaCE {
 
   // Método para borrar un contacto
   void borraContacto(Contact contacto) {
-    contactosService.quitaContacto(contacto);
+    contactosModel.quitaContacto(contacto);
   }
 
   // Método para obtener la lista de contactos
   List<Contact> obtenerListaContactos() {
-    return contactosService.obtenerContactos();
+    return contactosModel.obtenerContactos();
   }
 
   void actualizarEstado(String estado) async{
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     String longitud = position.longitude.toString();
     String latitud = position.latitude.toString();
-    contactosService.actualizarEstado(estado, longitud, latitud);
+    contactosModel.actualizarEstado(estado, longitud, latitud);
   }
 
   //String obtenerEstado(String telefono){
@@ -69,6 +69,16 @@ class ControladorListaCE {
   }
 
   void guardaMensaje(String mensaje){
-    contactosService.actualizaMensajeFirebase(mensaje); 
+    contactosModel.actualizaMensajeFirebase(mensaje); 
+  }
+ 
+  Future<String> obtenerMensaje(String telefono) async {
+    String? mensaje = await contactosModel.obtenerCampo(telefono, "Mensaje");
+
+    if (mensaje != null){
+      return mensaje;
+    } else {
+      return ""; //si no tiene estado o no se encuentra
+    }
   }
 }
