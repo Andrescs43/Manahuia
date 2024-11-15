@@ -162,7 +162,9 @@ Stream<List<obtenerReportes>> solicitarReportes() {
         //.map((snapshot) => snapshot.docs.map((doc) => ObtenerReportes.fromFirestore(doc.data() as Map<String, dynamic>)).toList());
   }
 
-
+  Future<void> agregarResena(obtenerReportes reporte, String resena) async {
+    _reporteModel.enviaResena(reporte, resena);
+  }
 
   Widget obtenerVistaMapa() {
     if (!_serviceEnabled || _permissionGranted == loc.PermissionStatus.denied) {
