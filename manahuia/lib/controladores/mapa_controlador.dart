@@ -10,6 +10,7 @@ import '../models/trabajadorModelo.dart';
 class MapaControlador {
   final ReporteModel _reporteModel = ReporteModel();
   final ContactosModelo _contactosModelo = ContactosModelo();
+  // ignore: unused_field
   late GoogleMapController _mapController;
   final loc.Location _locationController = loc.Location();
   BitmapDescriptor? uazonIcon;
@@ -21,7 +22,7 @@ class MapaControlador {
   loc.PermissionStatus _permissionGranted = loc.PermissionStatus.denied;
   final Set<Marker> _markers = {};
   bool showCustomInfoWindow = false;
-  LatLng customInfoWindowPosition = LatLng(0, 0);
+  LatLng customInfoWindowPosition = const LatLng(0, 0);
   String customInfoWindowTitle = '';
   String customInfoWindowDescription = '';
   final CollectionReference _reportesCollection = FirebaseFirestore.instance.collection('Reporte');
@@ -30,6 +31,7 @@ class MapaControlador {
       BuildContext context, Function actualizarVista) async {
     await _cargarIconos();
     await _actualizarUbicacion();
+    // ignore: use_build_context_synchronously
     await _cargarMarcadores(actualizarVista, context);
   }
 
@@ -69,8 +71,8 @@ void mostrarDetallesEstado(BuildContext context, String nombre, String estado, S
     context: context,
     builder: (BuildContext context) {
       return Container(
-        padding: EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.all(16.0),
+        decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
@@ -82,9 +84,9 @@ void mostrarDetallesEstado(BuildContext context, String nombre, String estado, S
           children: [
             Text(
               nombre,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Estado: $estado',
                 style: TextStyle(
@@ -92,23 +94,23 @@ void mostrarDetallesEstado(BuildContext context, String nombre, String estado, S
                   color: estado == 'Bien' ? Colors.green : Colors.red,
                 ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Mensaje: $mensaje',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 // Acción del botón si se necesita
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFB9BDCF),
+                    backgroundColor: const Color(0x0fb9bdcf),
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-              child: Text('Cerrar'),
+              child: const Text('Cerrar'),
             ),
           ],
         ),
