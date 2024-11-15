@@ -20,6 +20,10 @@ class MapaControlador {
   bool _serviceEnabled = false;
   loc.PermissionStatus _permissionGranted = loc.PermissionStatus.denied;
   final Set<Marker> _markers = {};
+  bool showCustomInfoWindow = false;
+  LatLng customInfoWindowPosition = LatLng(0, 0);
+  String customInfoWindowTitle = '';
+  String customInfoWindowDescription = '';
   final CollectionReference _reportesCollection = FirebaseFirestore.instance.collection('Reporte');
 
   Future<void> inicializarMapa(
@@ -58,6 +62,60 @@ class MapaControlador {
       });
     }
   }
+
+  // Función para mostrar el BottomSheet con el diseño personalizado
+void mostrarDetallesEstado(BuildContext context, String nombre, String estado, String mensaje) {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return Container(
+        padding: EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 5),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              nombre,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Estado: $estado',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: estado == 'Bien' ? Colors.green : Colors.red,
+                ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Mensaje: $mensaje',
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Acción del botón si se necesita
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFB9BDCF),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+              child: Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Future<void> _cargarMarcadores(Function actualizarVista, BuildContext context) async {
   // Cargar zonas oscuras
@@ -107,18 +165,17 @@ class MapaControlador {
           BitmapDescriptor iconoEstado = (estado == 'Bien')
               ? bienIcon!  // Ícono para "Bien"
               : malIcon!;  // Ícono para "Mal"
-
+          String nombreContacto = contacto.displayName;
           _markers.add(
             Marker(
               markerId: MarkerId(contacto.id),
               position: posicionContacto,
               icon: iconoEstado,
-              infoWindow: InfoWindow(
-                title: contacto.displayName,
-                snippet: 'Estado: $estado\nMensaje: $mensaje',
-              ),
+              onTap: () => mostrarDetallesEstado(context, nombreContacto, estado, mensaje!),
             ),
           );
+
+
           print("Marcador agregado para $telefono en la posición $posicionContacto");
         } else {
           print("Latitud o longitud no disponible para $telefono");

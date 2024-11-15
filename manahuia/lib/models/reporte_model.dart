@@ -11,6 +11,7 @@ class ReporteModel {
     List<Map<String, dynamic>> zonas = [];
     QuerySnapshot querySnapshot = await firestore.collection('Reporte').get();
 
+    print(querySnapshot);
     for (var doc in querySnapshot.docs) {
       zonas.add({
         'id': doc.id,
