@@ -81,6 +81,7 @@ void muestraCampoMensaje() {
               Text("Escribe un texto a tus contactos para que sepan de ti:"),
               TextField(
                 controller: _mensajeController,
+                maxLength: 85,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: isError ? Colors.red : Colors.grey),
@@ -211,8 +212,6 @@ void muestraCampoMensaje() {
     });
   }
 
-/*
-  @override
   Widget build(BuildContext context) {
     final contactos = contactosController.obtenerListaContactos();
     return Scaffold(
@@ -253,8 +252,6 @@ void muestraCampoMensaje() {
                                   Container(
                                     alignment: Alignment.center,
                                     margin: const EdgeInsets.all(15),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    height: 130,
                                     decoration: BoxDecoration(
                                       color: const Color.fromARGB(255, 183, 182, 182),
                                       borderRadius: BorderRadius.circular(20),
@@ -266,15 +263,17 @@ void muestraCampoMensaje() {
                                     ),
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
                                         Text(
-                                          contacto.displayName + "\n",
+                                          contacto.displayName,
                                           style: const TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.italic,
                                           ),
                                         ),
+                                        const SizedBox(height: 5), // Espacio entre el nombre y el mensaje
                                         FutureBuilder<String>(
                                           future: mostrarMensaje(telefono!), // Cambia aquí con el método correcto
                                           builder: (context, snapshot) {
@@ -288,17 +287,17 @@ void muestraCampoMensaje() {
                                             }
                                           },
                                         ),
+                                        const SizedBox(height: 10), // Espacio entre el mensaje y el botón
                                         ElevatedButton(
                                           onPressed: () {
                                             verContacto(contacto);
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                const Color.fromARGB(255, 83, 83, 83),
+                                            backgroundColor: const Color.fromARGB(255, 83, 83, 83),
                                           ),
-                                          child: Row(
+                                          child: const Row(
                                             mainAxisSize: MainAxisSize.min,
-                                            children: const [
+                                            children: [
                                               Icon(
                                                 Icons.phone,
                                                 color: Colors.white,
@@ -387,192 +386,10 @@ void muestraCampoMensaje() {
               iconSize: 35,
               onPressed: (){ muestraCampoMensaje();}, //por definir
               icon: Icon(Icons.edit_square)
-              )
             ),
+          ),
         ],
       ),
     );
-  }*/
-Widget build(BuildContext context) {
-  final contactos = contactosController.obtenerListaContactos();
-  return Scaffold(
-    body: Stack(
-      children: [
-        isLoading
-            ? Center(child: CircularProgressIndicator())
-            : contactos.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "No hay contactos guardados.\n¿Por qué no empiezas agregando uno?\n¡Pulsa el botón '+'!\n(Recuerda haber activado el permiso\npara acceder a tus contactos).",
-                          textAlign: TextAlign.center,
-                        ),
-                        IconButton(
-                          onPressed: agregarContactoNuevo,
-                          icon: Icon(Icons.add),
-                          iconSize: 50,
-                        ),
-                      ],
-                    ),
-                  )
-                : Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: contactos.length,
-                          itemBuilder: (context, index) {
-                            final Contact contacto = contactos[index];
-                            String? telefono = contacto.phones.isNotEmpty ? contacto.phones.first.number : null;
-                            if (telefono != null){
-                              telefono = telefono.replaceFirst('+52', '').replaceAll(' ', '');
-                            }
-                            return Stack(
-                              children: [
-                                Container(
-                                  alignment: Alignment.center,
-                                  margin: const EdgeInsets.all(15),
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(255, 183, 182, 182),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: const Color.fromARGB(255, 63, 63, 63),
-                                      width: 3,
-                                      style: BorderStyle.solid,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        contacto.displayName,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5), // Espacio entre el nombre y el mensaje
-                                      FutureBuilder<String>(
-                                        future: mostrarMensaje(telefono!), // Cambia aquí con el método correcto
-                                        builder: (context, snapshot) {
-                                          if (snapshot.connectionState == ConnectionState.waiting) {
-                                            return Text("Cargando mensaje...", style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic));
-                                          } else if (snapshot.hasError) {
-                                            return Text("Error al obtener mensaje", style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic));
-                                          } else {
-                                            final mensaje = snapshot.data ?? "Mensaje no disponible";
-                                            return Text(mensaje, style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic));
-                                          }
-                                        },
-                                      ),
-                                      const SizedBox(height: 10), // Espacio entre el mensaje y el botón
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          verContacto(contacto);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color.fromARGB(255, 83, 83, 83),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: const [
-                                            Icon(
-                                              Icons.phone,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              "Ver Contacto",
-                                              style: TextStyle(color: Colors.white),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 10,
-                                  right: 8,
-                                  child: IconButton(
-                                    onPressed: () {
-                                      mostrarDialogoBorrar(contacto);
-                                    },
-                                    icon: const Icon(Icons.cancel_outlined),
-                                    color: const Color.fromARGB(255, 137, 10, 1),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      // Sección de mensaje de estado
-                      Container(
-                        color: mensajeColor,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Center(
-                          child: Text(
-                            mensajeTexto,
-                            style: TextStyle(color: Colors.white, fontSize: 11),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                      // Botones de estado
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.thumb_up_alt_outlined),
-                                color: botonColorBien,
-                                onPressed: () => actualizarEstado(true),
-                              ),
-                              const Text("Estoy bien", style: TextStyle(fontSize: 10)),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.thumb_down_alt_outlined),
-                                color: botonColorMal,
-                                onPressed: () => actualizarEstado(false),
-                              ),
-                              const Text("Estoy mal", style: TextStyle(fontSize: 10)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-        // Botón de agregar contacto en la esquina superior derecha
-        Positioned(
-          top: 5,
-          left: 5,
-          child: IconButton(
-            iconSize: 40,
-            onPressed: agregarContactoNuevo,
-            icon: Icon(Icons.add),
-          ),
-        ),
-        Positioned(
-          top: 50,
-          left: 5,
-          child: IconButton(
-            iconSize: 35,
-            onPressed: (){ muestraCampoMensaje();}, //por definir
-            icon: Icon(Icons.edit_square)
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-
+  }
 }
