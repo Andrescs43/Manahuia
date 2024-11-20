@@ -1,4 +1,4 @@
-import 'package:manahuia/models/contactosModelo.dart';
+import 'package:manahuia/models/trabajadorModelo.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:geolocator/geolocator.dart';
