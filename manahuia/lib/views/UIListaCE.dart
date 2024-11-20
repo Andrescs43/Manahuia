@@ -18,6 +18,7 @@ class _ListaCETabState extends State<ListaCETab> {
   String mensajeTexto = "Dile a tus contactos cómo estás:";
   Color botonColorBien = Colors.black;
   Color botonColorMal = Colors.black;
+  final _mensajeController = TextEditingController();
   
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _ListaCETabState extends State<ListaCETab> {
   }
 
   Future<void> cargarContactos() async {
-    await contactosController.contactosService.cargarContactos();
+    await contactosController.contactosModel.cargarContactos();
     setState(() {
       isLoading = false;
     });
@@ -64,6 +65,102 @@ class _ListaCETabState extends State<ListaCETab> {
         ],
       ),
     );
+  }
+void muestraCampoMensaje() {
+  bool isError = false;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text("Escribe un mensaje de estado."),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Escribe un texto a tus contactos para que sepan de ti:"),
+              TextField(
+                controller: _mensajeController,
+                maxLength: 85,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: isError ? Colors.red : Colors.grey),
+                  ),
+                  labelText: 'Escribe un mensaje...',
+                ),
+              ),
+              if (isError) // Si hay error, mostramos el mensaje
+                const Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    'Por favor, escribe un mensaje.',
+                    style: TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cerrar"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(222, 142, 142, 1),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    int resultadoVacio = contactosController.verificaVacio(_mensajeController.text.trim());
+                    if (resultadoVacio != 1) {
+                      setState(() {
+                        isError = true; // Activa el mensaje de error si el campo está vacío
+                      });
+                      print("Este es un texto vacío.");
+                    } else {
+                      enviaMensaje(_mensajeController.text);
+                      Navigator.pop(context);
+                      // Muestra un SnackBar de confirmación
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("¡Mensaje enviado! Tus contactos lo podrán ver."),
+                          backgroundColor: Colors.grey,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text("Enviar"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(142, 174, 222, 1),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/*
+  Metodo encargado de mandar al controlador el mensaje para que lo verifique y sea enviado
+*/
+  void enviaMensaje(String mensaje){
+    print("Obtuve el mensaje de: "+mensaje);
+    contactosController.guardaMensaje(mensaje);
+  }
+
+  Future<String> mostrarMensaje(String telefono){
+    return contactosController.obtenerMensaje(telefono);
   }
 
   void verContacto(Contact contacto) async {
@@ -120,7 +217,6 @@ class _ListaCETabState extends State<ListaCETab> {
     });
   }
 
-  @override
   Widget build(BuildContext context) {
     final contactos = contactosController.obtenerListaContactos();
     return Scaffold(
@@ -152,12 +248,15 @@ class _ListaCETabState extends State<ListaCETab> {
                             itemCount: contactos.length,
                             itemBuilder: (context, index) {
                               final Contact contacto = contactos[index];
+                              String? telefono = contacto.phones.isNotEmpty ? contacto.phones.first.number : null;
+                              if (telefono != null){
+                                telefono = telefono.replaceFirst('+52', '').replaceAll(' ', '');
+                              }
                               return Stack(
                                 children: [
                                   Container(
                                     alignment: Alignment.center,
                                     margin: const EdgeInsets.all(15),
-                                    height: 130,
                                     decoration: BoxDecoration(
                                       color: const Color.fromARGB(255, 183, 182, 182),
                                       borderRadius: BorderRadius.circular(20),
@@ -169,16 +268,32 @@ class _ListaCETabState extends State<ListaCETab> {
                                     ),
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
                                       children: [
                                         Text(
-                                          contacto.displayName + "\n",
+                                          contacto.displayName,
                                           style: const TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             fontStyle: FontStyle.italic,
                                           ),
                                         ),
-                                        Row(
+                                        const SizedBox(height: 5), // Espacio entre el nombre y el mensaje
+                                        FutureBuilder<String>(
+                                          future: mostrarMensaje(telefono!), // Cambia aquí con el método correcto
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.waiting) {
+                                              return Text("Cargando mensaje...", style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic));
+                                            } else if (snapshot.hasError) {
+                                              return Text("Error al obtener mensaje", style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic));
+                                            } else {
+                                              final mensaje = snapshot.data ?? "Mensaje no disponible";
+                                              return Text(mensaje, style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic));
+                                            }
+                                          },
+                                        ),
+                                        const SizedBox(height: 10), // Espacio entre el mensaje y el botón
+                                          Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             ElevatedButton(
@@ -189,9 +304,9 @@ class _ListaCETabState extends State<ListaCETab> {
                                                 backgroundColor:
                                                     const Color.fromARGB(255, 83, 83, 83),
                                               ),
-                                              child: Row(
+                                              child: const Row(
                                                 mainAxisSize: MainAxisSize.min,
-                                                children: const [
+                                                children:  [
                                                   Icon(
                                                     Icons.contact_page_outlined,
                                                     color: Colors.white,
@@ -204,7 +319,7 @@ class _ListaCETabState extends State<ListaCETab> {
                                                 ],
                                               ),
                                             ),
-                                            SizedBox(width: 10),
+                                            const SizedBox(width: 10),
                                             ElevatedButton(
                                               onPressed: () {
                                                 llamarContacto(contacto);
@@ -213,7 +328,7 @@ class _ListaCETabState extends State<ListaCETab> {
                                                 backgroundColor:
                                                     const Color.fromARGB(255, 83, 83, 83),
                                               ),
-                                              child: Row(
+                                              child: const Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: const [
                                                   Icon(
@@ -294,9 +409,20 @@ class _ListaCETabState extends State<ListaCETab> {
             top: 5,
             left: 5,
             child: IconButton(
-              iconSize: 50,
+              color: Colors.black,
+              iconSize: 40,
               onPressed: agregarContactoNuevo,
               icon: Icon(Icons.add),
+            ),
+          ),
+          Positioned(
+            top: 50,
+            left: 5,
+            child: IconButton(
+              color: const Color.fromARGB(255, 0, 0, 0),
+              iconSize: 35,
+              onPressed: (){ muestraCampoMensaje();}, //por definir
+              icon: Icon(Icons.edit_square)
             ),
           ),
         ],
