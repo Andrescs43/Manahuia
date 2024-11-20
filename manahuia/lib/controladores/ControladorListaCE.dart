@@ -12,6 +12,7 @@ class ControladorListaCE {
     telefono = await contactosService.obtenerTelefono() ?? "";
     estado = await contactosService.obtenerEstado(telefono) ?? "";
   }
+
   // Método para obtener un contacto
   Future<Contact?> obtenContacto() async {
     var permissionStatus = await Permission.contacts.status;
@@ -39,23 +40,25 @@ class ControladorListaCE {
     return contactosService.obtenerContactos();
   }
 
-  void actualizarEstado(String estado,) async{
+  void actualizarEstado(String estado) async {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     String longitud = position.longitude.toString();
     String latitud = position.latitude.toString();
     contactosService.guardaEstado(estado, longitud, latitud);
   }
 
-  //String obtenerEstado(String telefono){
-    //String estado = contactosService.obtenerEstado(telefono) as String;
-    //if (estado != ""){
-      //return estado;
-    //} else {
-      //return "";
-    //}
-  //}
-
   String obtenerTelefono() => telefono;
 
   String obtenerEstado() => estado;
+
+  // Método para iniciar una llamada al contacto
+  Future<void> iniciarLlamada(Contact contacto) async {
+    var status = await Permission.phone.request();
+
+    if (status.isGranted) {
+      contactosService.llamar(contacto);
+    } else {
+      print("Permiso para realizar llamadas no concedido.");
+    }
+  }
 }

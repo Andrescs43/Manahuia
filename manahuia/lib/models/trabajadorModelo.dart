@@ -2,8 +2,8 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'dart:convert';
-
 class ContactosModelo {
   List<Contact> contactos = [];
   final FirebaseFirestore _firestore = FirebaseFirestore.instance; //para consultar tokens en y enviar notificaciones
@@ -146,7 +146,16 @@ class ContactosModelo {
     return prefs.getString('telefono'); // Devuelve el valor como String
   }
 
-}
+  Future<void> llamar(Contact contacto) async {
+    // Obtiene el número de teléfono sin espacios
+    String numero = contacto.phones.isNotEmpty ? contacto.phones.first.number.replaceAll(' ', '') : '';
+    
+    if (numero.isNotEmpty) {
+      await FlutterPhoneDirectCaller.callNumber(numero);
+    } else {
+      print("El contacto no tiene un número de teléfono válido.");
+    }
+  }
 
 // login_model.dart
 
