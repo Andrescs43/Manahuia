@@ -293,20 +293,7 @@ void muestraCampoMensaje() {
                                           },
                                         ),
                                         const SizedBox(height: 10), // Espacio entre el mensaje y el botón
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            verContacto(contacto);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color.fromARGB(255, 83, 83, 83),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.phone,
-                                                color: Colors.white,
-                                        Row(
+                                          Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             ElevatedButton(
@@ -317,9 +304,9 @@ void muestraCampoMensaje() {
                                                 backgroundColor:
                                                     const Color.fromARGB(255, 83, 83, 83),
                                               ),
-                                              child: Row(
+                                              child: const Row(
                                                 mainAxisSize: MainAxisSize.min,
-                                                children: const [
+                                                children:  [
                                                   Icon(
                                                     Icons.contact_page_outlined,
                                                     color: Colors.white,
@@ -332,7 +319,7 @@ void muestraCampoMensaje() {
                                                 ],
                                               ),
                                             ),
-                                            SizedBox(width: 10),
+                                            const SizedBox(width: 10),
                                             ElevatedButton(
                                               onPressed: () {
                                                 llamarContacto(contacto);
@@ -341,7 +328,7 @@ void muestraCampoMensaje() {
                                                 backgroundColor:
                                                     const Color.fromARGB(255, 83, 83, 83),
                                               ),
-                                              child: Row(
+                                              child: const Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: const [
                                                   Icon(
@@ -398,7 +385,7 @@ void muestraCampoMensaje() {
                                 IconButton(
                                   icon: Icon(Icons.thumb_up_alt_outlined),
                                   color: botonColorBien,
-                                  onPressed: () => eligeEstado(true),
+                                  onPressed: () => actualizarEstado(true),
                                 ),
                                 const Text("Estoy bien", style: TextStyle(fontSize: 10)),
                               ],
@@ -408,7 +395,7 @@ void muestraCampoMensaje() {
                                 IconButton(
                                   icon: Icon(Icons.thumb_down_alt_outlined),
                                   color: botonColorMal,
-                                  onPressed: () => eligeEstado(false),
+                                  onPressed: () => actualizarEstado(false),
                                 ),
                                 const Text("Estoy mal", style: TextStyle(fontSize: 10)),
                               ],
@@ -422,6 +409,7 @@ void muestraCampoMensaje() {
             top: 5,
             left: 5,
             child: IconButton(
+              color: Colors.black,
               iconSize: 40,
               onPressed: agregarContactoNuevo,
               icon: Icon(Icons.add),
@@ -431,6 +419,7 @@ void muestraCampoMensaje() {
             top: 50,
             left: 5,
             child: IconButton(
+              color: const Color.fromARGB(255, 0, 0, 0),
               iconSize: 35,
               onPressed: (){ muestraCampoMensaje();}, //por definir
               icon: Icon(Icons.edit_square)

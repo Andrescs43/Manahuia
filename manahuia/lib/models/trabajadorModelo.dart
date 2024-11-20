@@ -164,8 +164,6 @@ class ContactosModelo {
     }
   }
 
-}
-
   Future<void> llamar(Contact contacto) async {
     // Obtiene el número de teléfono sin espacios
     String numero = contacto.phones.isNotEmpty ? contacto.phones.first.number.replaceAll(' ', '') : '';
@@ -176,6 +174,8 @@ class ContactosModelo {
       print("El contacto no tiene un número de teléfono válido.");
     }
   }
+
+}
 
 // login_model.dart
 

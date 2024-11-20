@@ -79,7 +79,7 @@ class ControladorListaCE {
     var status = await Permission.phone.request();
 
     if (status.isGranted) {
-      contactosService.llamar(contacto);
+      contactosModel.llamar(contacto);
     } else {
       print("Permiso para realizar llamadas no concedido.");
     }
