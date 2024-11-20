@@ -221,6 +221,7 @@ Stream<List<obtenerReportes>> solicitarReportes() {
         //.map((snapshot) => snapshot.docs.map((doc) => ObtenerReportes.fromFirestore(doc.data() as Map<String, dynamic>)).toList());
   }
 
+  // Método para agregar una reseña a un reporte
   Future<void> agregarResena(obtenerReportes reporte, String resena) async {
     _reporteModel.enviaResena(reporte, resena);
   }

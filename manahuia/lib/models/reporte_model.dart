@@ -22,6 +22,7 @@ class ReporteModel {
     return zonas;
   }
 
+  // Método para enviar un reporte a Firestore
   Future<void> enviaResena(obtenerReportes reporte, String resena) async {
     try {
       // Asegúrate de que el reporteID esté en el tipo correcto
