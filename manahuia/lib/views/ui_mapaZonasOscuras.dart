@@ -310,7 +310,14 @@ class _verListadoReportes extends StatelessWidget {
                     ),
                   ),
                   const Divider(),
-                  const Text("Reseñas", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                    "Reseñas",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20, // Aumenta el tamaño del texto
+                    ),
+                    ),
+                    const Divider(),
                   if (reporte.resenas!.isNotEmpty)
                     SizedBox(
                       height: 200,
@@ -351,8 +358,21 @@ class _verListadoReportes extends StatelessWidget {
                             reporte.resenas!.add(textoResena);
                           });
                           resenaController.clear();
+
+                          //Muestra un mensaje de confirmación
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Se agregó correctamente la reseña'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
                         }
                       },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Color(0xFF8AD28A),
+                        foregroundColor: Colors.black,
+                      ),
                       child: const Text('Enviar Reseña'),
                     ),
                   ),
@@ -362,7 +382,7 @@ class _verListadoReportes extends StatelessWidget {
             actionsAlignment: MainAxisAlignment.center,
             actions: [
               TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.red),
+                style: TextButton.styleFrom(foregroundColor: Colors.black, backgroundColor: Colors.red),
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('CERRAR'),
               ),
@@ -373,7 +393,6 @@ class _verListadoReportes extends StatelessWidget {
     },
   );
 }
-
 }
 
 class _ImageFullscreen extends StatelessWidget {
