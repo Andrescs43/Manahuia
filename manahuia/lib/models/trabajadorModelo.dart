@@ -2,6 +2,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'dart:convert';
 
 class ContactosModelo {
@@ -94,6 +95,7 @@ class ContactosModelo {
     }
   }
 
+
   Future<void> actualizarEstado(String estado, String longitud, String latitud) async {
     String? telefonoActual = await obtenerTelefono(); // Usa await para obtener el valor, pero se tarda culeron
     if (telefonoActual != null && telefonoActual.isNotEmpty) {
@@ -124,6 +126,22 @@ class ContactosModelo {
     return "";
   }
   }
+
+    Future<String?> obtenerMensaje(String telefono) async{
+    try {
+    // Obtiene el documento con el teléfono especificado
+    DocumentSnapshot snapshot = await _firestore.collection('Trabajador').doc(telefono).get();
+    // Verifica que el documento existe y obteniene el campo 'Mensaje'
+    if (snapshot.exists) {
+      return snapshot.get('Mensaje') as String?;
+    } else {
+      return ""; // Retorna null si el documento no existe
+    }
+  } catch (e) {
+    print('Error al obtener el Mensaje: $e');
+    return "";
+  }
+  }
   
   Future<String?> obtenerTelefono() async {
     SharedPreferences prefs = await SharedPreferences.getInstance(); // Usa await para resolver el Future
@@ -147,6 +165,17 @@ class ContactosModelo {
   }
 
 }
+
+  Future<void> llamar(Contact contacto) async {
+    // Obtiene el número de teléfono sin espacios
+    String numero = contacto.phones.isNotEmpty ? contacto.phones.first.number.replaceAll(' ', '') : '';
+    
+    if (numero.isNotEmpty) {
+      await FlutterPhoneDirectCaller.callNumber(numero);
+    } else {
+      print("El contacto no tiene un número de teléfono válido.");
+    }
+  }
 
 // login_model.dart
 

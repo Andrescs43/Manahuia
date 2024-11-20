@@ -60,7 +60,7 @@ class NotificacionesControl {
   List<NotificacionesModel> zonasOscuras = [];
   Map<String, bool> notificacionesEnviadas = {};
 
-   Future<void> iniciar() async {
+   Future<void> iniciarNotificaciones() async {
     // Obtener las zonas oscuras desde el modelo
     zonasOscuras = await NotificacionesModel.obtenerZonasOscuras();
     _iniciarMonitoreo();

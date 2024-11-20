@@ -65,14 +65,20 @@ class ReporteControlador {
         final compressedImageFile = File(image.path)..writeAsBytesSync(compressedBytes);
 
         // Sube la imagen comprimida
-        String fileName = 'evidences/${DateTime.now().millisecondsSinceEpoch}.jpg';
-        Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
-        UploadTask uploadTask = storageRef.putFile(compressedImageFile);
-        TaskSnapshot snapshot = await uploadTask;
-        String downloadUrl = await snapshot.ref.getDownloadURL();
-        imageUrls.add(downloadUrl);
+        String fileName = 'evidences/${DateTime.now().millisecondsSinceEpoch}.jpg'; //Nombre de la imagen
+        Reference storageRef = FirebaseStorage.instance.ref().child(fileName); // Referencia al archivo
+        UploadTask uploadTask = storageRef.putFile(compressedImageFile); // Sube el archivo
+        TaskSnapshot snapshot = await uploadTask; // Espera a que se complete la subida
+        String downloadUrl = await snapshot.ref.getDownloadURL(); // Obtiene la URL de descarga
+        imageUrls.add(downloadUrl); // Agrega la URL a la lista
       }
     }
     return imageUrls;
+  }
+
+  //Enviar reporte
+  Future<void> enviaReporte(List<File> images) async {
+    List<String> imageUrls = images.isNotEmpty ? await generaReporte(images) : [];
+    await FirebaseFirestore.instance.collection('Reporte').add(reportModel.toFirestore(imageUrls));
   }
 }

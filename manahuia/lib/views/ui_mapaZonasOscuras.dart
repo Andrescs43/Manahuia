@@ -105,7 +105,7 @@ class _MapaZonaTabState extends State<MapaZonaTab> {
   @override
   void initState() {
     super.initState();
-    notificacionesControl.iniciar(); // Iniciar notificaciones
+    notificacionesControl.iniciarNotificaciones(); // Iniciar notificaciones
     widget.controlador.inicializarMapa(context, actualizarMapa);
     checkNotificationPermission();
   }
@@ -165,10 +165,12 @@ class _verListadoReportes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final MapaControlador mapasController = MapaControlador();
+
     return Scaffold(
       appBar: AppBar(title: const Text("Lista de Reportes")),
       body: StreamBuilder<List<obtenerReportes>>(
-        stream: reportesController.solicitarReportes(),
+        stream: mapasController.solicitarReportes(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) { //Muestra un indicador de carga
             return const Center(child: CircularProgressIndicator());
@@ -233,101 +235,164 @@ class _verListadoReportes extends StatelessWidget {
 
   // Método para mostrar la pantalla con detalles
   void _mostrarDetalles(BuildContext context, obtenerReportes reporte) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        
-        //Sirve para formatear la fecha y no mostrar datos innecesarios
-        var fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:${reporte.fecha.minute}";
-        if(reporte.fecha.day < 10){
-          fechaFormateada = "0$fechaFormateada";
-        }
-        if (reporte.fecha.minute < 10) {
-          fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:0${reporte.fecha.minute}";
-        }
-        if (reporte.fecha.hour < 10) {
-          fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
-        }
+  final TextEditingController resenaController = TextEditingController();
+  
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          var fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:${reporte.fecha.minute}";
+          if (reporte.fecha.day < 10) fechaFormateada = "0$fechaFormateada";
+          if (reporte.fecha.minute < 10) fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} ${reporte.fecha.hour}:0${reporte.fecha.minute}";
+          if (reporte.fecha.hour < 10) fechaFormateada = "${reporte.fecha.day}/${reporte.fecha.month}/${reporte.fecha.year} 0${reporte.fecha.hour}:${reporte.fecha.minute}";
 
-        //Muestra un diálogo con los detalles del reporte
-        return AlertDialog(
-          //title: const Text('Detalles del Reporte'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (reporte.imageUrls.isNotEmpty)
-                  SizedBox(
-                    height: 200,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: reporte.imageUrls.map((imageUrl) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: GestureDetector(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => _ImageFullscreen(imageUrl: imageUrl),
+          return AlertDialog(
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (reporte.imageUrls.isNotEmpty)
+                    SizedBox(
+                      height: 200,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: reporte.imageUrls.map((imageUrl) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => _ImageFullscreen(imageUrl: imageUrl),
+                                  ),
+                                ),
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                  errorWidget: (context, url, error) => const Icon(Icons.error, size: 100),
+                                  width: 120,
                                 ),
                               ),
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) => const Icon(Icons.error, size: 100),
-                                width: 120, // Ajuste de tamaño para evitar problemas de renderizado
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          "Reporte: ${reporte.tipoProblema}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          "Descripción: ${reporte.descripcion}",
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          "Fecha: $fechaFormateada",
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          "Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}",
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          "Emisor: ${reporte.nombreEmisor}",
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Reporte: ${reporte.tipoProblema}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
+                  const Divider(),
+                    const Text(
+                    "Reseñas",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20, // Aumenta el tamaño del texto
+                    ),
+                    ),
+                    const Divider(),
+                  if (reporte.resenas!.isNotEmpty)
+                    SizedBox(
+                      height: 200,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: reporte.resenas!.map((resena) {
+                            return Column(
+                              children: [
+                                ListTile(
+                                  title: Text(resena),
+                                ),
+                                const Divider(),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                       ),
-                      Text(
-                        "Descripción: ${reporte.descripcion}",
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        "Fecha: $fechaFormateada",
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        "Ubicación: ${reporte.direccion ?? 'Ubicación no disponible'}",
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        "Emisor: ${reporte.nombreEmisor}",
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                    )
+                  else
+                    const Text("No hay reseñas disponibles"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: resenaController,
+                    decoration: const InputDecoration(
+                      labelText: 'Añadir reseña',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final textoResena = resenaController.text.trim();
+                        if (textoResena.isNotEmpty) {
+                          await reportesController.agregarResena(reporte, textoResena);
+                          setState(() {
+                            // Actualiza la lista local de reseñas
+                            reporte.resenas!.add(textoResena);
+                          });
+                          resenaController.clear();
+
+                          //Muestra un mensaje de confirmación
+                          // ignore: use_build_context_synchronously
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Se agregó correctamente la reseña'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        backgroundColor: Color(0xFF8AD28A),
+                        foregroundColor: Colors.black,
+                      ),
+                      child: const Text('Enviar Reseña'),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.white, backgroundColor: Colors.red),
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('CERRAR'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.black, backgroundColor: Colors.red),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('CERRAR'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 }
 
 class _ImageFullscreen extends StatelessWidget {
