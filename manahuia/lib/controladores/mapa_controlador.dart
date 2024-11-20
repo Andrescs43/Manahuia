@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as loc;
 import 'package:manahuia/models/reporte_model.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import '../models/contactosModelo.dart';
+import '../models/trabajadorModelo.dart';
 
 class MapaControlador {
   final ReporteModel _reporteModel = ReporteModel();
