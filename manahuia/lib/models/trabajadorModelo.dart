@@ -4,6 +4,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'dart:convert';
+
 class ContactosModelo {
   List<Contact> contactos = [];
   final FirebaseFirestore _firestore = FirebaseFirestore.instance; //para consultar tokens en y enviar notificaciones
@@ -94,7 +95,8 @@ class ContactosModelo {
     }
   }
 
-  Future<void> guardaEstado(String estado, String longitud, String latitud) async {
+
+  Future<void> actualizarEstado(String estado, String longitud, String latitud) async {
     String? telefonoActual = await obtenerTelefono(); // Usa await para obtener el valor, pero se tarda culeron
     if (telefonoActual != null && telefonoActual.isNotEmpty) {
       // Actualiza el documento del Trabajador en Firestore con el nuevo token
@@ -146,6 +148,22 @@ class ContactosModelo {
     return prefs.getString('telefono'); // Devuelve el valor como String
   }
 
+  Future<void> actualizaMensajeFirebase(String mensaje) async {
+    try{
+      String? telefonoActual = await obtenerTelefono(); // Usa await para obtener el valor, pero se tarda culeron
+    if (telefonoActual != null && telefonoActual.isNotEmpty) {
+      // Actualiza el documento del Trabajador en Firestore con el nuevo token
+      await _firestore.collection('Trabajador').doc(telefonoActual).update({
+        'Mensaje': mensaje,
+      });
+    } else {
+      print("No se pudo actualizar el estado: Teléfono no disponible.");
+    }
+    } catch (e){
+      print("Error: $e");
+    }
+  }
+
   Future<void> llamar(Contact contacto) async {
     // Obtiene el número de teléfono sin espacios
     String numero = contacto.phones.isNotEmpty ? contacto.phones.first.number.replaceAll(' ', '') : '';
@@ -156,6 +174,7 @@ class ContactosModelo {
       print("El contacto no tiene un número de teléfono válido.");
     }
   }
+
 }
 // login_model.dart
 
