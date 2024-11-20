@@ -44,7 +44,7 @@ class ControladorListaCE {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     String longitud = position.longitude.toString();
     String latitud = position.latitude.toString();
-    contactosService.actualizarEstado(estado, longitud, latitud);
+    contactosService.guardaEstado(estado, longitud, latitud);
   }
 
   String obtenerTelefono() => telefono;

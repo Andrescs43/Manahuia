@@ -164,7 +164,7 @@ class _UiReporteState extends State<UiReporte> {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
                       try {
-                        await reportModel.enviaReporte(selectedImages);
+                        await reportController.enviaReporte(selectedImages);
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte enviado')));
                         _limpiarFormulario(); // Limpiar formulario después de enviar
                       } catch (error) {

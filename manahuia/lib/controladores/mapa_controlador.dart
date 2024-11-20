@@ -5,11 +5,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as loc;
 import 'package:manahuia/models/reporte_model.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import '../models/.dart';
+import '../models/trabajadorModelo.dart';
 
 class MapaControlador {
   final ReporteModel _reporteModel = ReporteModel();
   final ContactosModelo _contactosModelo = ContactosModelo();
+  // ignore: unused_field
   late GoogleMapController _mapController;
   final loc.Location _locationController = loc.Location();
   BitmapDescriptor? uazonIcon;
@@ -20,12 +21,17 @@ class MapaControlador {
   bool _serviceEnabled = false;
   loc.PermissionStatus _permissionGranted = loc.PermissionStatus.denied;
   final Set<Marker> _markers = {};
+  bool showCustomInfoWindow = false;
+  LatLng customInfoWindowPosition = const LatLng(0, 0);
+  String customInfoWindowTitle = '';
+  String customInfoWindowDescription = '';
   final CollectionReference _reportesCollection = FirebaseFirestore.instance.collection('Reporte');
 
   Future<void> inicializarMapa(
       BuildContext context, Function actualizarVista) async {
     await _cargarIconos();
     await _actualizarUbicacion();
+    // ignore: use_build_context_synchronously
     await _cargarMarcadores(actualizarVista, context);
   }
 
@@ -59,6 +65,60 @@ class MapaControlador {
     }
   }
 
+  // Función para mostrar el BottomSheet con el diseño personalizado
+void mostrarDetallesEstado(BuildContext context, String nombre, String estado, String mensaje) {
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 5),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              nombre,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Estado: $estado',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: estado == 'Bien' ? Colors.green : Colors.red,
+                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Mensaje: $mensaje',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Acción del botón si se necesita
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0x0fb9bdcf),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
   Future<void> _cargarMarcadores(Function actualizarVista, BuildContext context) async {
   // Cargar zonas oscuras
   List<Map<String, dynamic>> zonasOscuras = await _reporteModel.obtenerZonasOscuras();
@@ -88,6 +148,9 @@ class MapaControlador {
       // Obtener estado y nombre desde Firebase usando el teléfono como identificador
       String? estado = await _contactosModelo.obtenerEstado(telefono);
 
+      //Obtener mesnaje desde firebase usando el teléfono como identificador
+      String? mensaje = await _contactosModelo.obtenerMensaje(telefono);
+
       if (estado != null) {
         print("Estado obtenido para $telefono: $estado");
 
@@ -104,18 +167,17 @@ class MapaControlador {
           BitmapDescriptor iconoEstado = (estado == 'Bien')
               ? bienIcon!  // Ícono para "Bien"
               : malIcon!;  // Ícono para "Mal"
-
+          String nombreContacto = contacto.displayName;
           _markers.add(
             Marker(
               markerId: MarkerId(contacto.id),
               position: posicionContacto,
               icon: iconoEstado,
-              infoWindow: InfoWindow(
-                title: contacto.displayName,
-                snippet: 'Estado: $estado',
-              ),
+              onTap: () => mostrarDetallesEstado(context, nombreContacto, estado, mensaje!),
             ),
           );
+
+
           print("Marcador agregado para $telefono en la posición $posicionContacto");
         } else {
           print("Latitud o longitud no disponible para $telefono");
@@ -159,7 +221,9 @@ Stream<List<obtenerReportes>> solicitarReportes() {
         //.map((snapshot) => snapshot.docs.map((doc) => ObtenerReportes.fromFirestore(doc.data() as Map<String, dynamic>)).toList());
   }
 
-
+  Future<void> agregarResena(obtenerReportes reporte, String resena) async {
+    _reporteModel.enviaResena(reporte, resena);
+  }
 
   Widget obtenerVistaMapa() {
     if (!_serviceEnabled || _permissionGranted == loc.PermissionStatus.denied) {

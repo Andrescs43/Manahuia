@@ -1,7 +1,7 @@
 //Controlador de las notificaciones que maneja la logica de los tokens
 //para enviarlos a diferentes dispositivos.
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:manahuia/models/.dart';
+import 'package:manahuia/models/trabajadorModelo.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../models/reporte_model.dart';
@@ -60,7 +60,7 @@ class NotificacionesControl {
   List<NotificacionesModel> zonasOscuras = [];
   Map<String, bool> notificacionesEnviadas = {};
 
-   Future<void> iniciar() async {
+   Future<void> iniciarNotificaciones() async {
     // Obtener las zonas oscuras desde el modelo
     zonasOscuras = await NotificacionesModel.obtenerZonasOscuras();
     _iniciarMonitoreo();
