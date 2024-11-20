@@ -70,7 +70,12 @@ class _ListaCETabState extends State<ListaCETab> {
     await FlutterContacts.openExternalView(contacto.id);
   }
 
- //cambia colores de la interfaz
+  // Nuevo método para llamar al contacto
+  void llamarContacto(Contact contacto) {
+    contactosController.iniciarLlamada(contacto);
+  }
+
+  //cambia colores de la interfaz
   void actualizarEstado(bool estoyBien) async {
     setState(() {
         if (estoyBien) {
@@ -173,28 +178,57 @@ class _ListaCETabState extends State<ListaCETab> {
                                             fontStyle: FontStyle.italic,
                                           ),
                                         ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            verContacto(contacto);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                const Color.fromARGB(255, 83, 83, 83),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: const [
-                                              Icon(
-                                                Icons.phone,
-                                                color: Colors.white,
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                verContacto(contacto);
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromARGB(255, 83, 83, 83),
                                               ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                "Ver Contacto",
-                                                style: TextStyle(color: Colors.white),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Icon(
+                                                    Icons.contact_page_outlined,
+                                                    color: Colors.white,
+                                                  ),
+                                                  SizedBox(width: 5),
+                                                  Text(
+                                                    "Ver Contacto",
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                            SizedBox(width: 10),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                llamarContacto(contacto);
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    const Color.fromARGB(255, 83, 83, 83),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Icon(
+                                                    Icons.call,
+                                                    color: Colors.white,
+                                                  ),
+                                                  SizedBox(width: 5),
+                                                  Text(
+                                                    "Llamar",
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
@@ -236,7 +270,7 @@ class _ListaCETabState extends State<ListaCETab> {
                                 IconButton(
                                   icon: Icon(Icons.thumb_up_alt_outlined),
                                   color: botonColorBien,
-                                  onPressed: () => actualizarEstado(true),
+                                  onPressed: () => eligeEstado(true),
                                 ),
                                 const Text("Estoy bien", style: TextStyle(fontSize: 10)),
                               ],
@@ -246,7 +280,7 @@ class _ListaCETabState extends State<ListaCETab> {
                                 IconButton(
                                   icon: Icon(Icons.thumb_down_alt_outlined),
                                   color: botonColorMal,
-                                  onPressed: () => actualizarEstado(false),
+                                  onPressed: () => eligeEstado(false),
                                 ),
                                 const Text("Estoy mal", style: TextStyle(fontSize: 10)),
                               ],
