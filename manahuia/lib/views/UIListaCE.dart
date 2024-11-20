@@ -76,7 +76,7 @@ class _ListaCETabState extends State<ListaCETab> {
   }
 
   //cambia colores de la interfaz
-  void actualizarEstado(bool estoyBien) async {
+  void eligeEstado(bool estoyBien) async {
     setState(() {
         if (estoyBien) {
         mensajeColor = Colors.green;

@@ -156,7 +156,7 @@ class ContactosModelo {
       print("El contacto no tiene un número de teléfono válido.");
     }
   }
-
+}
 // login_model.dart
 
 class LoginModel {
